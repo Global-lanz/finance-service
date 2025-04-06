@@ -1,0 +1,31 @@
+server:
+  port: 8085
+
+spring:
+  profiles:
+    active: dev
+  application:
+    name: finance-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/finance
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  messages:
+    basename: lang/messages
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+#Eureka
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka

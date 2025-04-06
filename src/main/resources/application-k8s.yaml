@@ -1,0 +1,33 @@
+server:
+  port: 8085
+spring:
+  application:
+    name: finance-service
+  datasource:
+    url: jdbc:postgresql://postgres:5432/finance
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  messages:
+    basename: lang/messages
+  cloud:
+    kubernetes:
+      discovery:
+        enabled: true
+#    config:
+#      discovery:
+#        enabled: false
+
+#Eureka
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    enabled: false
+
+authentication-service:
+  url: http://authentication-service
+company-service:
+  url: http://company-service
+customer-service:
+  url: http://customer-service
