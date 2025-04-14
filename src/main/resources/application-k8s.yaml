@@ -14,9 +14,6 @@ spring:
     kubernetes:
       discovery:
         enabled: true
-#    config:
-#      discovery:
-#        enabled: false
 
 #Eureka
 eureka:
