@@ -1,25 +1,7 @@
-CREATE TYPE contract_status AS ENUM (
-    'QUOTATION',
-    'AWAITING_SIGNATURE',
-    'APPROVED',
-    'RUNNING',
-    'TERMINATED',
-    'CANCELLED'
-);
-
-CREATE TYPE contract_type AS ENUM (
-    'QUOTE',
-    'AMENDMENT_QUOTE',
-    'CANCELLATION_QUOTE',
-    'CONTRACT',
-    'AMENDMENT_CONTRACT',
-    'CANCELLATION_CONTRACT'
-);
-
 CREATE TABLE contract_status_transition (
     contract_status_transition_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    from_status CONTRACT_STATUS NOT NULL,
-    to_status CONTRACT_STATUS NOT NULL,
+    from_status CHARACTER VARYING NOT NULL,
+    to_status CHARACTER VARYING NOT NULL,
     CONSTRAINT valid_status_transition UNIQUE (from_status, to_status)
 );
 
@@ -27,12 +9,12 @@ CREATE TABLE IF NOT EXISTS contract
 (
     contract_id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     total_amount        NUMERIC(14, 2),
-    contract_type       CONTRACT_TYPE,
+    contract_type       CHARACTER VARYING,
     frequency           CHARACTER VARYING,
     payment_day         INTEGER,
     start_date          DATE,
     end_date            DATE,
-    contract_status     CONTRACT_STATUS,
+    contract_status     CHARACTER VARYING,
     termination_clause  TEXT,
     penalty_fee         NUMERIC(5, 2),
     currency_id         UUID,
@@ -57,7 +39,7 @@ CREATE TABLE IF NOT EXISTS payment
     invoice_id          UUID NOT NULL,
     amount              NUMERIC(14, 2),
     payment_date        DATE,
-    note                CHARACTER VARYING,
+    note                TEXT,
     company_id          UUID NOT NULL,
     CONSTRAINT payment_invoice_fk FOREIGN KEY (invoice_id) REFERENCES invoice (invoice_id)
     );

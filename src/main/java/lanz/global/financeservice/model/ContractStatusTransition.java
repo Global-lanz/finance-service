@@ -25,11 +25,11 @@ public class ContractStatusTransition {
     private UUID contractStatusTransitionId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "from_status", columnDefinition = "contract_status")
+    @Column(name = "from_status")
     private ContractStatusEnum fromStatus;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "to_status", columnDefinition = "contract_status")
+    @Column(name = "to_status")
     private ContractStatusEnum toStatus;
 
 }
