@@ -61,19 +61,3 @@ CREATE TABLE IF NOT EXISTS payment
     company_id          UUID NOT NULL,
     CONSTRAINT payment_invoice_fk FOREIGN KEY (invoice_id) REFERENCES invoice (invoice_id)
     );
-
-CREATE TYPE contract_status AS ENUM (
-    'QUOTATION',
-    'AWAITING_SIGNATURE',
-    'APPROVED',
-    'RUNNING',
-    'TERMINATED',
-    'CANCELLED'
-);
-
-CREATE TABLE contract_status_transition (
-    contract_status_transition_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    from_status contract_status NOT NULL,
-    to_status contract_status NOT NULL,
-    CONSTRAINT valid_status_transition UNIQUE (from_status, to_status)
-);
