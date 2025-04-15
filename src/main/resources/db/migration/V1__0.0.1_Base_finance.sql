@@ -17,22 +17,22 @@ CREATE TYPE contract_type AS ENUM (
 );
 
 CREATE TABLE contract_status_transition (
-                                            contract_status_transition_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                                            from_status CONTRACT_STATUS NOT NULL,
-                                            to_status CONTRACT_STATUS NOT NULL,
-                                            CONSTRAINT valid_status_transition UNIQUE (from_status, to_status)
+    contract_status_transition_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    from_status CONTRACT_STATUS NOT NULL,
+    to_status CONTRACT_STATUS NOT NULL,
+    CONSTRAINT valid_status_transition UNIQUE (from_status, to_status)
 );
 
 CREATE TABLE IF NOT EXISTS contract
 (
     contract_id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     total_amount        NUMERIC(14, 2),
-    "type"              CONTRACT_TYPE,
+    contract_type       CONTRACT_TYPE,
     frequency           CHARACTER VARYING,
     payment_day         INTEGER,
-    "start"             DATE,
-    "end"               DATE,
-    status              CONTRACT_STATUS,
+    start_date          DATE,
+    end_date            DATE,
+    contract_status     CONTRACT_STATUS,
     termination_clause  TEXT,
     penalty_fee         NUMERIC(5, 2),
     currency_id         UUID,
