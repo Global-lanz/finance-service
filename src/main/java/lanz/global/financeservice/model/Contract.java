@@ -35,18 +35,18 @@ public class Contract {
     @Column(name = "payment_day")
     private Integer paymentDay;
 
-    @Column(name = "start")
+    @Column(name = "start_date")
     private LocalDate start;
 
-    @Column(name = "end")
+    @Column(name = "end_date")
     private LocalDate end;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status")
+    @Column(name = "contract_status", columnDefinition = "contract_status")
     private ContractStatusEnum status;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "type")
+    @Column(name = "contract_type", columnDefinition = "contract_type")
     private ContractTypeEnum type;
 
     @Column(name = "termination_clause")
