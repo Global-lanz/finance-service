@@ -1,6 +1,7 @@
 package lanz.global.financeservice.api.request.contract;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -16,6 +17,6 @@ public record ContractRequest(@Schema(description = "The ID of the customer") @N
                               @Schema(description = "The ID of the customer", example = "2025-01-15") LocalDate start,
                               @Schema(description = "The ID of the customer", example = "2025-07-15") LocalDate end,
                               @Schema(description = "The ID of the customer") String terminationClause,
-                              @Schema(description = "The ID of the customer") @Size(max = 100) BigDecimal penaltyFee,
+                              @Schema(description = "The ID of the customer") @Digits(integer = 3, fraction = 2) BigDecimal penaltyFee,
                               @Schema(description = "The ID of the customer") UUID currencyId) implements Serializable {
 }
