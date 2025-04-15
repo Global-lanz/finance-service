@@ -1,3 +1,15 @@
+INSERT INTO
+    contract_status_transition(from_status, to_status)
+VALUES
+    ('QUOTATION', 'AWAITING_SIGNATURE'),
+    ('QUOTATION', 'CANCELLED'),
+    ('AWAITING_SIGNATURE', 'CANCELLED'),
+    ('AWAITING_SIGNATURE', 'APPROVED'),
+    ('AWAITING_SIGNATURE', 'QUOTATION'),
+    ('APPROVED', 'RUNNING'),
+    ('RUNNING', 'TERMINATED')
+;
+
 CREATE TABLE IF NOT EXISTS currency
 (
     currency_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
