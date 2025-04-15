@@ -42,11 +42,11 @@ public class Contract {
     private LocalDate end;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "contract_status")
+    @Column(name = "contract_status", columnDefinition = "contract_status")
     private ContractStatusEnum status;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "contract_type")
+    @Column(name = "contract_type", columnDefinition = "contract_type")
     private ContractTypeEnum type;
 
     @Column(name = "termination_clause")
