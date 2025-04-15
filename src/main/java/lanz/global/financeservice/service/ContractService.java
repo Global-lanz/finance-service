@@ -11,6 +11,7 @@ import lanz.global.financeservice.model.ContractStatusTransition;
 import lanz.global.financeservice.model.ContractTypeEnum;
 import lanz.global.financeservice.repository.ContractRepository;
 import lanz.global.financeservice.repository.ContractStatusTransitionRepository;
+import lanz.global.financeservice.repository.CurrencyRepository;
 import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,22 +30,16 @@ public class ContractService {
     private final CustomerService customerService;
     private final AuthenticationFacade authenticationFacade;
     private final ContractStatusTransitionRepository contractStatusTransitionRepository;
+    private final CurrencyRepository currencyRepository;
 
     public Contract createContract(ContractRequest request) {
-        validateCustomer(request.customerId());
+        validateCreateContract(request);
+
         Contract contract = serviceConverter.convert(request, Contract.class);
         contract.setStatus(ContractStatusEnum.QUOTATION);
         contract.setType(ContractTypeEnum.QUOTE);
         contract.setCompanyId(authenticationFacade.getCompanyId());
         return contractRepository.save(contract);
-    }
-
-    private void validateCustomer(UUID customerId) {
-        validateCustomerExists(customerId);
-    }
-
-    private void validateCustomerExists(UUID customerId) {
-        customerService.findCustomerById(customerId);
     }
 
     public Contract findContractById(UUID contractId) {
@@ -61,39 +56,6 @@ public class ContractService {
         Contract contract = findContractById(contractId);
         validateDeleteContract(contract);
         contractRepository.delete(contract);
-    }
-
-    private void validateDeleteContract(Contract contract) {
-        var permittedTypes = List.of(ContractTypeEnum.QUOTE, ContractTypeEnum.AMENDMENT_QUOTE, ContractTypeEnum.CANCELLATION_QUOTE);
-        if (!permittedTypes.contains(contract.getType())) {
-            throw new BadRequestException("exception.delete-contract-type-not-allowed.title", "exception.delete-contract-type-not-allowed.description", contract.getType().name());
-        }
-
-        var permittedStatus = List.of(ContractStatusEnum.QUOTATION, ContractStatusEnum.AWAITING_SIGNATURE, ContractStatusEnum.APPROVED);
-        if (!permittedStatus.contains(contract.getStatus())) {
-            throw new BadRequestException("exception.delete-contract-status-not-allowed.title", "exception.delete-contract-status-not-allowed.description", contract.getStatus().name());
-        }
-    }
-
-    private void validateUpdateContract(Contract contract) {
-        var permittedTypes = List.of(ContractTypeEnum.QUOTE, ContractTypeEnum.AMENDMENT_QUOTE, ContractTypeEnum.CANCELLATION_QUOTE);
-        if (!permittedTypes.contains(contract.getType())) {
-            throw new BadRequestException("exception.update-contract-type-not-allowed.title", "exception.update-contract-type-not-allowed.description", contract.getType().name());
-        }
-
-        var permittedStatus = List.of(ContractStatusEnum.QUOTATION);
-        if (!permittedStatus.contains(contract.getStatus())) {
-            throw new BadRequestException("exception.update-contract-status-not-allowed.title", "exception.update-contract-status-not-allowed.description", contract.getStatus().name());
-        }
-    }
-
-    public Contract updateContract(UUID contractId, ContractRequest request) {
-        Contract contract = findContractById(contractId);
-        validateUpdateContract(contract);
-
-        Contract updatedContract = serviceConverter.convert(request, contract, Contract.class);
-
-        return contractRepository.save(updatedContract);
     }
 
     public Contract updateContractStatus(UUID contractId, ContractStatusUpdateRequest request) {
@@ -119,11 +81,63 @@ public class ContractService {
         return contractRepository.save(contract);
     }
 
+    public Contract updateContract(UUID contractId, ContractRequest request) {
+        Contract contract = findContractById(contractId);
+        validateUpdateContract(contract, request);
+
+        Contract updatedContract = serviceConverter.convert(request, contract, Contract.class);
+
+        return contractRepository.save(updatedContract);
+    }
+
+    private void validateDeleteContract(Contract contract) {
+        var permittedTypes = List.of(ContractTypeEnum.QUOTE, ContractTypeEnum.AMENDMENT_QUOTE, ContractTypeEnum.CANCELLATION_QUOTE);
+        if (!permittedTypes.contains(contract.getType())) {
+            throw new BadRequestException("exception.delete-contract-type-not-allowed.title", "exception.delete-contract-type-not-allowed.description", contract.getType().name());
+        }
+
+        var permittedStatus = List.of(ContractStatusEnum.QUOTATION, ContractStatusEnum.AWAITING_SIGNATURE, ContractStatusEnum.APPROVED);
+        if (!permittedStatus.contains(contract.getStatus())) {
+            throw new BadRequestException("exception.delete-contract-status-not-allowed.title", "exception.delete-contract-status-not-allowed.description", contract.getStatus().name());
+        }
+    }
+
+    private void validateUpdateContract(Contract contract, ContractRequest request) {
+        var permittedTypes = List.of(ContractTypeEnum.QUOTE, ContractTypeEnum.AMENDMENT_QUOTE, ContractTypeEnum.CANCELLATION_QUOTE);
+        if (!permittedTypes.contains(contract.getType())) {
+            throw new BadRequestException("exception.update-contract-type-not-allowed.title", "exception.update-contract-type-not-allowed.description", contract.getType().name());
+        }
+
+        var permittedStatus = List.of(ContractStatusEnum.QUOTATION);
+        if (!permittedStatus.contains(contract.getStatus())) {
+            throw new BadRequestException("exception.update-contract-status-not-allowed.title", "exception.update-contract-status-not-allowed.description", contract.getStatus().name());
+        }
+
+        validateCurrencyExists(request.currencyId());
+    }
+
+    private void validateCurrencyExists(UUID currencyId) {
+        currencyRepository.findById(currencyId).orElseThrow(() -> new NotFoundException("Currency"));
+    }
+
     private void validateUpdateContractStatus(ContractStatusEnum fromStatus, ContractStatusEnum toStatus) {
         Optional<ContractStatusTransition> contractStatusTransition = contractStatusTransitionRepository.findByFromStatusAndToStatus(fromStatus, toStatus);
 
         if (contractStatusTransition.isEmpty()) {
             throw new BadRequestException("exception.update-contract-status-from-to-not-allowed.title", "exception.update-contract-status-from-to-not-allowed.description", fromStatus.name(), toStatus.name());
         }
+    }
+
+    private void validateCreateContract(ContractRequest request) {
+        validateCustomerExists(request.customerId());
+        validateCurrencyExists(request.currencyId());
+    }
+
+    private void validateCustomerExists(UUID customerId) {
+        customerService.findCustomerById(customerId);
+    }
+
+    public List<ContractStatusTransition> findAllContractStatusTransitions() {
+        return contractStatusTransitionRepository.findAll();
     }
 }

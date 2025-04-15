@@ -9,7 +9,9 @@ import lanz.global.financeservice.api.config.Rules;
 import lanz.global.financeservice.api.request.contract.ContractRequest;
 import lanz.global.financeservice.api.request.contract.ContractStatusUpdateRequest;
 import lanz.global.financeservice.api.response.contract.ContractResponse;
+import lanz.global.financeservice.api.response.contract.ContractStatusTransitionResponse;
 import lanz.global.financeservice.model.Contract;
+import lanz.global.financeservice.model.ContractStatusTransition;
 import lanz.global.financeservice.service.ContractService;
 import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
@@ -86,7 +88,7 @@ public class ContractApi {
 
     @PostMapping("/{contractId}/status")
     @RolesAllowed(Rules.UPDATE_CONTRACT_STATUS)
-    @ApiOperation(value = "Create new Contract", notes = "The endpoint updates the status of the contract")
+    @ApiOperation(value = "Updates the status of the contract", notes = "The endpoint updates the status of the contract following some rules")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Contract status updated"), @ApiResponse(code = 400, message = "Bad request"), @ApiResponse(code = 404, message = "Contract not found")})
     public ResponseEntity<ContractResponse> updateContractStatus(@PathVariable UUID contractId, @Valid @RequestBody ContractStatusUpdateRequest request) {
         Contract contract = contractService.updateContractStatus(contractId, request);
@@ -94,4 +96,13 @@ public class ContractApi {
         return ResponseEntity.ok(serviceConverter.convert(contract, ContractResponse.class));
     }
 
+    @GetMapping("/status/transition")
+    @RolesAllowed(Rules.UPDATE_CONTRACT_STATUS)
+    @ApiOperation(value = "List of allowed status transitions", notes = "The endpoint retrieves the list of the status transitions that a contract can have")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Transition allowed"), @ApiResponse(code = 400, message = "Bad request"), @ApiResponse(code = 404, message = "Contract not found")})
+    public ResponseEntity<List<ContractStatusTransitionResponse>> findAllContractStatusTransitions() {
+        List<ContractStatusTransition> transitions = contractService.findAllContractStatusTransitions();
+
+        return ResponseEntity.ok(serviceConverter.convertList(transitions, ContractStatusTransitionResponse.class));
+    }
 }
