@@ -29,17 +29,29 @@ public class InvoiceConsumer {
             UUID contractId = UUID.fromString(String.valueOf(event.data.get("contractId")));
 
             switch (event.type) {
-                case CREATE_INVOICES: {
-                    log.info("Event {}: Creating invoices for ContractID: {}", event.eventId.toString(), contractId);
-                    invoiceService.createInvoices(contractId);
-                    log.info("Event {}: Created invoices for ContractID: {}", event.eventId.toString(), contractId);
-                }
+                case CREATE_INVOICES:
+                    createInvoices(event, contractId);
                 break;
+                case DELETE_UNPAID_INVOICES:
+                    deleteUnpaidInvoices(event, contractId);
+                    break;
                 default:
                     throw new IllegalStateException("Unexpected value: " + event.type);
             }
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void createInvoices(Event event, UUID contractId) {
+        log.info("Event {}: Creating invoices for ContractID: {}", event.eventId.toString(), contractId);
+        invoiceService.createInvoices(contractId);
+        log.info("Event {}: Created invoices for ContractID: {}", event.eventId.toString(), contractId);
+    }
+
+    private void deleteUnpaidInvoices(Event event, UUID contractId) {
+        log.info("Event {}: Deleting unpaid invoices for ContractID: {}", event.eventId.toString(), contractId);
+        invoiceService.deleteUnpaidInvoices(contractId);
+        log.info("Event {}: Deleted unpaid invoices for ContractID: {}", event.eventId.toString(), contractId);
     }
 }

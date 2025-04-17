@@ -7,7 +7,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -20,34 +19,28 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@Table(name = "invoice")
-public class Invoice {
+@Table(name = "payment")
+public class Payment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "invoice_id")
+    @Column(name = "payment_id")
     private UUID invoiceId;
-
-    @Column(name = "invoice_number")
-    private Integer invoiceNumber;
 
     @Column(name = "amount")
     private BigDecimal amount;
 
-    @Column(name = "due_date")
-    private LocalDate dueDate;
+    @Column(name = "payment_date")
+    private LocalDate paymentDate;
 
-    @Column(name = "description")
-    private String description;
+    @Column(name = "note")
+    private String note;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "invoice_id")
+    private Invoice invoice;
 
     @Column(name = "company_id")
     private UUID companyId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "contract_id")
-    private Contract contract;
-
-    @OneToOne(mappedBy = "invoice")
-    private Payment payment;
 
 }

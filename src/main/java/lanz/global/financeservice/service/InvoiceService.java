@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -29,30 +30,33 @@ public class InvoiceService {
     public void createInvoices(UUID contractId) {
         Optional<Contract> optionalContract = contractRepository.findById(contractId);
 
-        if (optionalContract.isPresent()) {
-            Contract contract = optionalContract.get();
-
-            var quotationStatus = List.of(ContractTypeEnum.QUOTE, ContractTypeEnum.AMENDMENT_QUOTE, ContractTypeEnum.CANCELLATION_QUOTE);
-
-            if (quotationStatus.contains(contract.getType()) && contract.getStatus().equals(ContractStatusEnum.APPROVED)) {
-                List<Invoice> invoices = new ArrayList<>();
-
-                UUID companyId = contract.getCompanyId();
-                int installmentQuantity = extractInstallmentQuantity(contract);
-                BigDecimal installmentAmount = getInstallmentAmount(contract, installmentQuantity);
-                LocalDate startDateReference = getStartDateReference(contract);
-
-                for (int i = 1; i <= installmentQuantity; i++) {
-                    Invoice invoice = createInvoice(companyId, installmentAmount, i, startDateReference);
-                    invoice.setContract(contract);
-                    invoices.add(invoice);
-                }
-
-                invoiceRepository.saveAll(invoices);
-                updateContractTypeToEffective(contract);
-                contractRepository.save(contract);
-            }
+        if (optionalContract.isEmpty()) {
+            return;
         }
+
+        Contract contract = optionalContract.get();
+
+        var quotationStatus = List.of(ContractTypeEnum.QUOTE, ContractTypeEnum.AMENDMENT_QUOTE, ContractTypeEnum.CANCELLATION_QUOTE);
+
+        if (quotationStatus.contains(contract.getType()) && contract.getStatus().equals(ContractStatusEnum.APPROVED)) {
+            List<Invoice> invoices = new ArrayList<>();
+
+            UUID companyId = contract.getCompanyId();
+            int installmentQuantity = extractInstallmentQuantity(contract);
+            BigDecimal installmentAmount = getInstallmentAmount(contract, installmentQuantity);
+            LocalDate startDateReference = getStartDateReference(contract);
+
+            for (int i = 1; i <= installmentQuantity; i++) {
+                Invoice invoice = createInvoice(companyId, installmentAmount, i, startDateReference);
+                invoice.setContract(contract);
+                invoices.add(invoice);
+            }
+
+            invoiceRepository.saveAll(invoices);
+            updateContractTypeToEffective(contract);
+            contractRepository.save(contract);
+        }
+
     }
 
     private void updateContractTypeToEffective(Contract contract) {
@@ -93,4 +97,27 @@ public class InvoiceService {
         return invoice;
     }
 
+    public void deleteUnpaidInvoices(UUID contractId) {
+        Optional<Contract> optionalContract = contractRepository.findById(contractId);
+
+        if (optionalContract.isEmpty()) {
+            return;
+        }
+        Contract contract = optionalContract.get();
+        List<Invoice> invoices = findUnpaidInvoices(contract);
+
+        invoiceRepository.deleteAll(invoices);
+    }
+
+    private List<Invoice> findUnpaidInvoices(Contract contract) {
+        List<Invoice> invoices = invoiceRepository.findAllByContract(contract);
+
+        if (invoices.isEmpty()) {
+            return invoices;
+        }
+
+        return invoices.stream()
+                .filter(invoice -> Objects.isNull(invoice.getPayment()))
+                .toList();
+    }
 }

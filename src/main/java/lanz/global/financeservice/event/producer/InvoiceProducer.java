@@ -30,6 +30,13 @@ public class InvoiceProducer {
         sendEvent(event);
     }
 
+    public void deleteInvoices(UUID contractId) {
+        Event event = new Event();
+        event.type = EventTypeEnum.DELETE_UNPAID_INVOICES;
+        event.data = Map.of("contractId", contractId);
+        sendEvent(event);
+    }
+
     private void sendEvent(Event event) {
         try {
             String message = objectMapper.writeValueAsString(event);
@@ -39,5 +46,4 @@ public class InvoiceProducer {
             throw new RuntimeException(e);
         }
     }
-
 }

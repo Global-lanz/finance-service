@@ -68,9 +68,20 @@ public class ContractService {
 
         contract.setStatus(request.status());
         Contract saved = contractRepository.save(contract);
-        if (saved.getStatus().equals(ContractStatusEnum.APPROVED)) {
-            invoiceProducer.createInvoices(saved.getContractId());
+
+        switch (saved.getStatus()) {
+            case AWAITING_SIGNATURE, TERMINATED, QUOTATION, RUNNING:
+                break;
+            case APPROVED:
+                invoiceProducer.createInvoices(saved.getContractId());
+                break;
+            case CANCELLED:
+                invoiceProducer.deleteInvoices(saved.getContractId());
+                break;
+            default:
+                return saved;
         }
+
         return saved;
     }
 
