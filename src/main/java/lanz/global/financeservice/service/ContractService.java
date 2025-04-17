@@ -2,6 +2,7 @@ package lanz.global.financeservice.service;
 
 import lanz.global.financeservice.api.request.contract.ContractRequest;
 import lanz.global.financeservice.api.request.contract.ContractStatusUpdateRequest;
+import lanz.global.financeservice.event.producer.InvoiceProducer;
 import lanz.global.financeservice.exception.BadRequestException;
 import lanz.global.financeservice.exception.NotFoundException;
 import lanz.global.financeservice.facade.AuthenticationFacade;
@@ -31,6 +32,8 @@ public class ContractService {
     private final AuthenticationFacade authenticationFacade;
     private final ContractStatusTransitionRepository contractStatusTransitionRepository;
     private final CurrencyRepository currencyRepository;
+
+    private final InvoiceProducer invoiceProducer;
 
     public Contract createContract(ContractRequest request) {
         validateCreateContract(request);
@@ -64,21 +67,11 @@ public class ContractService {
         validateUpdateContractStatus(contract.getStatus(), request.status());
 
         contract.setStatus(request.status());
-
-        if (contract.isRunning()) {
-            ContractTypeEnum contractType = switch (contract.getType()) {
-                case QUOTE -> ContractTypeEnum.CONTRACT;
-                case AMENDMENT_QUOTE -> ContractTypeEnum.AMENDMENT_CONTRACT;
-                case CANCELLATION_QUOTE -> ContractTypeEnum.CANCELLATION_CONTRACT;
-                default -> null;
-            };
-
-            if (contractType != null) {
-                contract.setType(contractType);
-            }
+        Contract saved = contractRepository.save(contract);
+        if (saved.getStatus().equals(ContractStatusEnum.APPROVED)) {
+            invoiceProducer.createInvoices(saved.getContractId());
         }
-
-        return contractRepository.save(contract);
+        return saved;
     }
 
     public Contract updateContract(UUID contractId, ContractRequest request) {
