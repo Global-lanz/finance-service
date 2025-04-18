@@ -12,9 +12,8 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
 
-
     public Payment createPayment() {
-
+        return null;
     }
 
 }
