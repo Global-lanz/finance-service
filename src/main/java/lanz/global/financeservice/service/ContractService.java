@@ -47,7 +47,7 @@ public class ContractService {
 
     public Contract findContractById(UUID contractId) {
         UUID companyId = authenticationFacade.getCompanyId();
-        return contractRepository.findByContractIdAndCompanyId(contractId, companyId).orElseThrow(() -> new NotFoundException("Contract"));
+        return contractRepository.findByContractIdAndCompanyId(contractId, companyId).orElseThrow(() -> new NotFoundException("contract"));
     }
 
     public List<Contract> findAllContracts() {

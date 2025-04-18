@@ -5,9 +5,8 @@ import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.UUID;
 
-public record PaymentRequest(@Schema(description = "The ID of the invoice") @NotNull UUID invoiceId,
-                             @Schema(description = "The amount paid", example = "299.90") @NotNull BigDecimal totalAmount,
-                             @Schema(description = "The date of the payment", example = "2025-04-10") @NotNull LocalDate paymentDate) {
+public record PaymentRequest(@Schema(description = "The amount paid", example = "299.90") @NotNull BigDecimal amount,
+                             @Schema(description = "The date of the payment", example = "2025-04-10") @NotNull LocalDate paymentDate,
+                             @Schema(description = "The note of the payment", example = "Paid by bank transfer") String note) {
 }

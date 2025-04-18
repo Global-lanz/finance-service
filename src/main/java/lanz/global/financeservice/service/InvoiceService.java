@@ -1,11 +1,16 @@
 package lanz.global.financeservice.service;
 
+import lanz.global.financeservice.api.request.payment.PaymentRequest;
+import lanz.global.financeservice.exception.BadRequestException;
+import lanz.global.financeservice.facade.impl.AuthenticationFacadeImpl;
 import lanz.global.financeservice.model.Contract;
 import lanz.global.financeservice.model.ContractStatusEnum;
 import lanz.global.financeservice.model.ContractTypeEnum;
 import lanz.global.financeservice.model.Invoice;
+import lanz.global.financeservice.model.Payment;
 import lanz.global.financeservice.repository.ContractRepository;
 import lanz.global.financeservice.repository.InvoiceRepository;
+import lanz.global.financeservice.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +31,9 @@ public class InvoiceService {
 
     private final InvoiceRepository invoiceRepository;
     private final ContractRepository contractRepository;
+    private final AuthenticationFacadeImpl authenticationFacade;
+    private final PaymentRepository paymentRepository;
+    private final ContractService contractService;
 
     public void createInvoices(UUID contractId) {
         Optional<Contract> optionalContract = contractRepository.findById(contractId);
@@ -119,5 +127,45 @@ public class InvoiceService {
         return invoices.stream()
                 .filter(invoice -> Objects.isNull(invoice.getPayment()))
                 .toList();
+    }
+
+    public Payment updatePayment(UUID invoiceId, PaymentRequest request) {
+        Invoice invoice = findInvoiceById(invoiceId);
+
+        Payment payment = invoice.getPayment();
+
+        if (payment == null) {
+            payment = new Payment();
+            payment.setInvoice(invoice);
+            payment.setCompanyId(invoice.getCompanyId());
+        }
+
+        payment.setAmount(request.amount());
+        payment.setPaymentDate(request.paymentDate());
+        payment.setNote(request.note());
+
+        return paymentRepository.save(payment);
+    }
+
+    private Invoice findInvoiceById(UUID invoiceId) {
+        UUID companyId = authenticationFacade.getCompanyId();
+        return invoiceRepository.findByInvoiceIdAndCompanyId(invoiceId, companyId).orElseThrow(() -> new BadRequestException("invoice"));
+    }
+
+    public Payment getPaymentByInvoiceId(UUID invoiceId) {
+        Invoice invoice = findInvoiceById(invoiceId);
+        return invoice.getPayment();
+    }
+
+    public void deletePaymentBy(UUID invoiceId) {
+        Payment payment = getPaymentByInvoiceId(invoiceId);
+        if (payment != null) {
+            paymentRepository.delete(payment);
+        }
+    }
+
+    public List<Invoice> findInvoicesByContractId(UUID contractId) {
+        Contract contract = contractService.findContractById(contractId);
+        return invoiceRepository.findAllByContract(contract);
     }
 }

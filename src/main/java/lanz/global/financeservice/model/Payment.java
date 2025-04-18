@@ -25,7 +25,7 @@ public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "payment_id")
-    private UUID invoiceId;
+    private UUID paymentId;
 
     @Column(name = "amount")
     private BigDecimal amount;
