@@ -11,7 +11,7 @@ public class InvoiceResponse {
     public BigDecimal amount;
     public LocalDate dueDate;
     public String description;
-    public boolean paid
+    public boolean paid;
 
     public PaymentResponse paymentResponse;
 }
