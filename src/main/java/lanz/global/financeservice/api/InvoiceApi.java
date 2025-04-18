@@ -14,6 +14,7 @@ import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -52,7 +53,7 @@ public class InvoiceApi {
     }
 
     @RolesAllowed(Rules.DELETE_PAYMENT)
-    @GetMapping("/{invoiceId}/payment")
+    @DeleteMapping("/{invoiceId}/payment")
     @ApiOperation(value = "Delete invoice payment", notes = "The endpoint deletes the payment record for the given invoice ID")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Invoice"), @ApiResponse(code = 404, message = "Invoice not found")})
     public ResponseEntity<PaymentResponse> deletePaymentByInvoiceId(@PathVariable("invoiceId") UUID invoiceId) {
