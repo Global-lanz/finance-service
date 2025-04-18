@@ -160,6 +160,8 @@ public class InvoiceService {
     public void deletePaymentBy(UUID invoiceId) {
         Invoice invoice = findInvoiceById(invoiceId);
         Optional<Payment> optionalPayment = paymentRepository.findByInvoice(invoice);
+        invoice.setPayment(null);
+        invoiceRepository.save(invoice);
         optionalPayment.ifPresent(paymentRepository::delete);
     }
 
