@@ -158,10 +158,9 @@ public class InvoiceService {
     }
 
     public void deletePaymentBy(UUID invoiceId) {
-        Payment payment = getPaymentByInvoiceId(invoiceId);
-        if (payment != null) {
-            paymentRepository.delete(payment);
-        }
+        Invoice invoice = findInvoiceById(invoiceId);
+        Optional<Payment> optionalPayment = paymentRepository.findByInvoice(invoice);
+        optionalPayment.ifPresent(paymentRepository::delete);
     }
 
     public List<Invoice> findInvoicesByContractId(UUID contractId) {
