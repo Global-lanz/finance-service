@@ -1,6 +1,8 @@
 package lanz.global.financeservice.service;
 
 import lanz.global.financeservice.api.request.payment.PaymentRequest;
+import lanz.global.financeservice.api.response.invoice.CreateInvoiceRequest;
+import lanz.global.financeservice.api.response.invoice.UpdateInvoiceRequest;
 import lanz.global.financeservice.exception.BadRequestException;
 import lanz.global.financeservice.facade.impl.AuthenticationFacadeImpl;
 import lanz.global.financeservice.model.Contract;
@@ -11,6 +13,7 @@ import lanz.global.financeservice.model.Payment;
 import lanz.global.financeservice.repository.ContractRepository;
 import lanz.global.financeservice.repository.InvoiceRepository;
 import lanz.global.financeservice.repository.PaymentRepository;
+import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,6 +37,7 @@ public class InvoiceService {
     private final AuthenticationFacadeImpl authenticationFacade;
     private final PaymentRepository paymentRepository;
     private final ContractService contractService;
+    private final ServiceConverter serviceConverter;
 
     public void createInvoices(UUID contractId) {
         Optional<Contract> optionalContract = contractRepository.findById(contractId);
@@ -51,11 +55,13 @@ public class InvoiceService {
 
             UUID companyId = contract.getCompanyId();
             int installmentQuantity = extractInstallmentQuantity(contract);
+            int currentInvoiceNumber = getCurrentInvoiceNumber(contract);
             BigDecimal installmentAmount = getInstallmentAmount(contract, installmentQuantity);
             LocalDate startDateReference = getStartDateReference(contract);
 
             for (int i = 1; i <= installmentQuantity; i++) {
-                Invoice invoice = createInvoice(companyId, installmentAmount, i, startDateReference);
+                int invoiceNumber = currentInvoiceNumber + i;
+                Invoice invoice = createInvoice(companyId, installmentAmount, invoiceNumber, startDateReference);
                 invoice.setContract(contract);
                 invoices.add(invoice);
             }
@@ -168,5 +174,33 @@ public class InvoiceService {
     public List<Invoice> findInvoicesByContractId(UUID contractId) {
         Contract contract = contractService.findContractById(contractId);
         return invoiceRepository.findAllByContract(contract);
+    }
+
+    public Invoice createInvoice(CreateInvoiceRequest request) {
+        Contract contract = contractService.findContractById(request.contractId());
+        Invoice invoice = serviceConverter.convert(request, Invoice.class);
+
+        invoice.setContract(contract);
+        invoice.setCompanyId(contract.getCompanyId());
+        invoice.setInvoiceNumber(generateNextInvoiceNumber(contract));
+
+        return invoiceRepository.save(invoice);
+    }
+
+    private Integer getCurrentInvoiceNumber(Contract contract) {
+        return invoiceRepository.findCurrentInvoiceNumber(contract.getContractId()).orElse(0);
+    }
+
+    private Integer generateNextInvoiceNumber(Contract contract) {
+        int currentInvoiceNumber = invoiceRepository.findCurrentInvoiceNumber(contract.getContractId()).orElse(0);
+        return currentInvoiceNumber + 1;
+    }
+
+    public Invoice updateInvoice(UUID invoiceId, UpdateInvoiceRequest request) {
+        Invoice invoice = findInvoiceById(invoiceId);
+
+        Invoice updatedInvoice = serviceConverter.convert(request, invoice, Invoice.class);
+
+        return invoiceRepository.save(updatedInvoice);
     }
 }
