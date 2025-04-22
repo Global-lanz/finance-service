@@ -10,9 +10,12 @@ import lanz.global.financeservice.api.request.contract.ContractRequest;
 import lanz.global.financeservice.api.request.contract.ContractStatusUpdateRequest;
 import lanz.global.financeservice.api.response.contract.ContractResponse;
 import lanz.global.financeservice.api.response.contract.ContractStatusTransitionResponse;
+import lanz.global.financeservice.api.response.invoice.InvoiceResponse;
 import lanz.global.financeservice.model.Contract;
 import lanz.global.financeservice.model.ContractStatusTransition;
+import lanz.global.financeservice.model.Invoice;
 import lanz.global.financeservice.service.ContractService;
+import lanz.global.financeservice.service.InvoiceService;
 import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +39,7 @@ public class ContractApi {
 
     private final ContractService contractService;
     private final ServiceConverter serviceConverter;
+    private final InvoiceService invoiceService;
 
     @PostMapping
     @RolesAllowed(Rules.CREATE_CONTRACT)
@@ -105,4 +109,15 @@ public class ContractApi {
 
         return ResponseEntity.ok(serviceConverter.convertList(transitions, ContractStatusTransitionResponse.class));
     }
+
+    @GetMapping("/{contractId}/invoice")
+    @RolesAllowed(Rules.LIST_INVOICES)
+    @ApiOperation(value = "List invoices from a contract", notes = "The endpoint retrieves the list of the invoices of the contract")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Invoices"), @ApiResponse(code = 404, message = "Contract not found")})
+    public ResponseEntity<List<InvoiceResponse>> findInvoicesByContractId(@PathVariable UUID contractId) {
+        List<Invoice> invoices = invoiceService.findInvoicesByContractId(contractId);
+
+        return ResponseEntity.ok(serviceConverter.convertList(invoices, InvoiceResponse.class));
+    }
+
 }

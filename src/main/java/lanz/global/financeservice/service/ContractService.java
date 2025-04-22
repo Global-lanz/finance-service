@@ -2,6 +2,7 @@ package lanz.global.financeservice.service;
 
 import lanz.global.financeservice.api.request.contract.ContractRequest;
 import lanz.global.financeservice.api.request.contract.ContractStatusUpdateRequest;
+import lanz.global.financeservice.event.producer.InvoiceProducer;
 import lanz.global.financeservice.exception.BadRequestException;
 import lanz.global.financeservice.exception.NotFoundException;
 import lanz.global.financeservice.facade.AuthenticationFacade;
@@ -32,6 +33,8 @@ public class ContractService {
     private final ContractStatusTransitionRepository contractStatusTransitionRepository;
     private final CurrencyRepository currencyRepository;
 
+    private final InvoiceProducer invoiceProducer;
+
     public Contract createContract(ContractRequest request) {
         validateCreateContract(request);
 
@@ -44,7 +47,7 @@ public class ContractService {
 
     public Contract findContractById(UUID contractId) {
         UUID companyId = authenticationFacade.getCompanyId();
-        return contractRepository.findByContractIdAndCompanyId(contractId, companyId).orElseThrow(() -> new NotFoundException("Contract"));
+        return contractRepository.findByContractIdAndCompanyId(contractId, companyId).orElseThrow(() -> new NotFoundException("contract"));
     }
 
     public List<Contract> findAllContracts() {
@@ -64,21 +67,22 @@ public class ContractService {
         validateUpdateContractStatus(contract.getStatus(), request.status());
 
         contract.setStatus(request.status());
+        Contract saved = contractRepository.save(contract);
 
-        if (contract.isRunning()) {
-            ContractTypeEnum contractType = switch (contract.getType()) {
-                case QUOTE -> ContractTypeEnum.CONTRACT;
-                case AMENDMENT_QUOTE -> ContractTypeEnum.AMENDMENT_CONTRACT;
-                case CANCELLATION_QUOTE -> ContractTypeEnum.CANCELLATION_CONTRACT;
-                default -> null;
-            };
-
-            if (contractType != null) {
-                contract.setType(contractType);
-            }
+        switch (saved.getStatus()) {
+            case AWAITING_SIGNATURE, TERMINATED, QUOTATION, RUNNING:
+                break;
+            case APPROVED:
+                invoiceProducer.createInvoices(saved.getContractId());
+                break;
+            case CANCELLED:
+                invoiceProducer.deleteInvoices(saved.getContractId());
+                break;
+            default:
+                return saved;
         }
 
-        return contractRepository.save(contract);
+        return saved;
     }
 
     public Contract updateContract(UUID contractId, ContractRequest request) {
