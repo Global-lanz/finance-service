@@ -2,7 +2,6 @@ package lanz.global.financeservice.external.api.customer;
 
 import lanz.global.financeservice.external.api.customer.response.CustomerResponse;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -12,6 +11,6 @@ import java.util.UUID;
 public interface CustomerClient {
 
     @GetMapping("/customer/{customerId}")
-    ResponseEntity<CustomerResponse> findCustomerById(@PathVariable UUID customerId);
+    CustomerResponse findCustomerById(@PathVariable UUID customerId);
 
 }

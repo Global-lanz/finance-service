@@ -19,14 +19,7 @@ public class CustomerService {
     private final CustomerClient customerClient;
 
     public UUID findCustomerById(UUID customerId) throws BadRequestException {
-        ResponseEntity<CustomerResponse> response = customerClient.findCustomerById(customerId);
-
-        return switch (response.getStatusCode()) {
-            case HttpStatus.OK -> response.getBody().customerId();
-            case HttpStatus.BAD_REQUEST ->
-                    throw new BadRequestException("exception.create-bad-request.title", "exception.create-bad-request.message", "Customer");
-            case null, default -> throw new InternalServerErrorException();
-        };
+        return customerClient.findCustomerById(customerId).customerId();
     }
 
 }
