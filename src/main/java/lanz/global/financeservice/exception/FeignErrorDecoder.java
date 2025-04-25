@@ -2,7 +2,7 @@ package lanz.global.financeservice.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
-import lanz.global.authenticationservice.exception.response.ErrorResponse;
+import lanz.global.financeservice.exception.response.ErrorResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
