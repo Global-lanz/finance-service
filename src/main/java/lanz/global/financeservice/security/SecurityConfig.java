@@ -1,5 +1,8 @@
 package lanz.global.financeservice.security;
 
+import lanz.global.financeservice.api.config.ServiceConfig;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -15,7 +18,10 @@ import javax.crypto.spec.SecretKeySpec;
 
 @Configuration
 @EnableMethodSecurity(jsr250Enabled = true)
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class SecurityConfig {
+
+    private final ServiceConfig config;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -33,8 +39,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        String secretKey = "3m1nh4Ch4v3Sup3rC0mpL3x4!!123456";
-        SecretKey key = new SecretKeySpec(secretKey.getBytes(), "HmacSHA256");
+        SecretKey key = new SecretKeySpec(config.getSecurity().getApiSecret().getBytes(), "HmacSHA256");
         return NimbusJwtDecoder.withSecretKey(key).build();
     }
 
