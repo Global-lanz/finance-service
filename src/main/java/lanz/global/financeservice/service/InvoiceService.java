@@ -1,13 +1,20 @@
 package lanz.global.financeservice.service;
 
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import jakarta.ws.rs.InternalServerErrorException;
 import lanz.global.financeservice.api.request.payment.PaymentRequest;
 import lanz.global.financeservice.api.response.invoice.CreateInvoiceRequest;
 import lanz.global.financeservice.api.response.invoice.UpdateInvoiceRequest;
 import lanz.global.financeservice.exception.BadRequestException;
+import lanz.global.financeservice.external.api.customer.response.CustomerResponse;
 import lanz.global.financeservice.facade.impl.AuthenticationFacadeImpl;
 import lanz.global.financeservice.model.Contract;
 import lanz.global.financeservice.model.ContractStatusEnum;
 import lanz.global.financeservice.model.ContractTypeEnum;
+import lanz.global.financeservice.model.Currency;
 import lanz.global.financeservice.model.Invoice;
 import lanz.global.financeservice.model.Payment;
 import lanz.global.financeservice.repository.ContractRepository;
@@ -16,14 +23,24 @@ import lanz.global.financeservice.repository.PaymentRepository;
 import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -38,6 +55,9 @@ public class InvoiceService {
     private final PaymentRepository paymentRepository;
     private final ContractService contractService;
     private final ServiceConverter serviceConverter;
+    private final CustomerService customerService;
+    private final CurrencyService currencyService;
+    private final Configuration freemarkerConfig;
 
     public void createInvoices(UUID contractId) {
         Optional<Contract> optionalContract = contractRepository.findById(contractId);
@@ -63,6 +83,8 @@ public class InvoiceService {
                 int invoiceNumber = currentInvoiceNumber + i;
                 Invoice invoice = createInvoice(companyId, installmentAmount, invoiceNumber, startDateReference);
                 invoice.setContract(contract);
+
+                generateInvoicePdf(invoice);
                 invoices.add(invoice);
             }
 
@@ -184,7 +206,84 @@ public class InvoiceService {
         invoice.setCompanyId(contract.getCompanyId());
         invoice.setInvoiceNumber(generateNextInvoiceNumber(contract));
 
-        return invoiceRepository.save(invoice);
+       return generateInvoicePdfAndSave(invoice);
+    }
+
+    public Invoice updateInvoice(UUID invoiceId, UpdateInvoiceRequest request) {
+        Invoice invoice = findInvoiceById(invoiceId);
+        Invoice updatedInvoice = serviceConverter.convert(request, invoice, Invoice.class);
+
+        return generateInvoicePdfAndSave(updatedInvoice);
+    }
+
+    private Invoice generateInvoicePdfAndSave(Invoice invoice) {
+        try {
+            generateInvoicePdf(invoice);
+            return invoiceRepository.save(invoice);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void generateInvoicePdf(Invoice invoice) {
+        try {
+            String fileName = generatePdf(invoice);
+            invoice.setFile(fileName);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String generatePdf(Invoice invoice) throws TemplateException, IOException {
+        CustomerResponse customer = customerService.findCustomerById(invoice.getContract().getCustomerId());
+        Currency currency = currencyService.findCurrencyById(invoice.getContract().getCurrencyId());
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("invoiceNumber", invoice.getInvoiceNumber());
+        data.put("contractId", invoice.getContract().getContractId());
+        data.put("customer", customer.name());
+        data.put("dueDate", invoice.getDueDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        data.put("currency", currency.getSymbol());
+        data.put("total", invoice.getAmount());
+        data.put("description", invoice.getDescription());
+
+        String language = getLocale().getLanguage();
+        String templatePath = String.format("invoice/%s/%s.ftl", language, "invoice");
+
+        Template template = freemarkerConfig.getTemplate(templatePath);
+        StringWriter stringWriter = new StringWriter();
+        template.process(data, stringWriter);
+
+        String pathName = getPathName(customer.customerId());
+        String htmlFileName = String.format("%s.html", invoice.getInvoiceNumber().toString());
+        String pdfFileName = String.format("%s.pdf", invoice.getInvoiceNumber());
+
+        File path = new File(pathName);
+        if (!path.exists()) {
+            path.mkdirs();
+        }
+
+        File file = new File(pathName, htmlFileName);
+
+        FileWriter fileWriter = new FileWriter(file);
+        fileWriter.write(stringWriter.toString());
+        fileWriter.close();
+
+        PdfRendererBuilder builder = new PdfRendererBuilder();
+        builder.useFastMode();
+        builder.withUri(String.format("file://%s/%s", pathName, htmlFileName));
+        builder.toStream(new FileOutputStream(String.format("%s/%s", pathName, pdfFileName)));
+        builder.run();
+
+        return pdfFileName;
+    }
+
+    private String getPathName(UUID customerId) {
+        return String.format("/Users/maico/Downloads/pdf/customer/%s/invoices", customerId.toString());
+    }
+
+    private Locale getLocale() {
+        return LocaleContextHolder.getLocale();
     }
 
     private Integer getCurrentInvoiceNumber(Contract contract) {
@@ -194,13 +293,5 @@ public class InvoiceService {
     private Integer generateNextInvoiceNumber(Contract contract) {
         int currentInvoiceNumber = invoiceRepository.findCurrentInvoiceNumber(contract.getContractId()).orElse(0);
         return currentInvoiceNumber + 1;
-    }
-
-    public Invoice updateInvoice(UUID invoiceId, UpdateInvoiceRequest request) {
-        Invoice invoice = findInvoiceById(invoiceId);
-
-        Invoice updatedInvoice = serviceConverter.convert(request, invoice, Invoice.class);
-
-        return invoiceRepository.save(updatedInvoice);
     }
 }
