@@ -1,13 +1,19 @@
 package lanz.global.financeservice.service;
 
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
 import lanz.global.financeservice.api.request.payment.PaymentRequest;
+import lanz.global.financeservice.api.response.InvoiceFileResponse;
 import lanz.global.financeservice.api.response.invoice.CreateInvoiceRequest;
 import lanz.global.financeservice.api.response.invoice.UpdateInvoiceRequest;
 import lanz.global.financeservice.exception.BadRequestException;
+import lanz.global.financeservice.external.api.customer.response.CustomerResponse;
 import lanz.global.financeservice.facade.impl.AuthenticationFacadeImpl;
 import lanz.global.financeservice.model.Contract;
 import lanz.global.financeservice.model.ContractStatusEnum;
 import lanz.global.financeservice.model.ContractTypeEnum;
+import lanz.global.financeservice.model.Currency;
 import lanz.global.financeservice.model.Invoice;
 import lanz.global.financeservice.model.Payment;
 import lanz.global.financeservice.repository.ContractRepository;
@@ -16,14 +22,26 @@ import lanz.global.financeservice.repository.PaymentRepository;
 import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.core.sync.ResponseTransformer;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import java.io.ByteArrayOutputStream;
+import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -38,6 +56,10 @@ public class InvoiceService {
     private final PaymentRepository paymentRepository;
     private final ContractService contractService;
     private final ServiceConverter serviceConverter;
+    private final CustomerService customerService;
+    private final CurrencyService currencyService;
+    private final Configuration freemarkerConfig;
+    private final S3Client s3Client;
 
     public void createInvoices(UUID contractId) {
         Optional<Contract> optionalContract = contractRepository.findById(contractId);
@@ -63,6 +85,8 @@ public class InvoiceService {
                 int invoiceNumber = currentInvoiceNumber + i;
                 Invoice invoice = createInvoice(companyId, installmentAmount, invoiceNumber, startDateReference);
                 invoice.setContract(contract);
+
+                generateInvoicePdf(invoice);
                 invoices.add(invoice);
             }
 
@@ -184,7 +208,87 @@ public class InvoiceService {
         invoice.setCompanyId(contract.getCompanyId());
         invoice.setInvoiceNumber(generateNextInvoiceNumber(contract));
 
-        return invoiceRepository.save(invoice);
+       return generateInvoicePdfAndSave(invoice);
+    }
+
+    public Invoice updateInvoice(UUID invoiceId, UpdateInvoiceRequest request) {
+        Invoice invoice = findInvoiceById(invoiceId);
+        Invoice updatedInvoice = serviceConverter.convert(request, invoice, Invoice.class);
+
+        return generateInvoicePdfAndSave(updatedInvoice);
+    }
+
+    private Invoice generateInvoicePdfAndSave(Invoice invoice) {
+        try {
+            generateInvoicePdf(invoice);
+            return invoiceRepository.save(invoice);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void generateInvoicePdf(Invoice invoice) {
+        try {
+            String fileName = generatePdf(invoice);
+            invoice.setFile(fileName);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String generatePdf(Invoice invoice) throws Exception {
+        Contract contract = invoice.getContract();
+        CustomerResponse customer = customerService.findCustomerById(contract.getCustomerId());
+        Currency currency = currencyService.findCurrencyById(contract.getCurrencyId());
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("invoiceNumber", invoice.getInvoiceNumber());
+        data.put("contractId", contract.getContractId());
+        data.put("customer", customer.name());
+        data.put("dueDate", invoice.getDueDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        data.put("currency", currency.getSymbol());
+        data.put("total", invoice.getAmount());
+        data.put("description", invoice.getDescription());
+
+        String language = getLocale().getLanguage();
+        String templatePath = String.format("invoice/%s/%s.ftl", language, "invoice");
+
+        Template template = freemarkerConfig.getTemplate(templatePath);
+        StringWriter stringWriter = new StringWriter();
+        template.process(data, stringWriter);
+
+        byte[] file = generatePdfFromHtml(stringWriter.toString());
+
+        String htmlFileName = String.format("%s/%s/%s.pdf", customer.customerId().toString(), contract.getContractId().toString(), invoice.getInvoiceNumber().toString());
+
+        return sendToAmazonS3("invoices", htmlFileName, file);
+    }
+
+    public byte[] generatePdfFromHtml(String html) throws Exception {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        PdfRendererBuilder builder = new PdfRendererBuilder();
+        builder.useFastMode();
+        builder.withHtmlContent(html, null); // baseUri = null se não usa imagens externas
+        builder.toStream(outputStream);
+        builder.run();
+
+        return outputStream.toByteArray();
+    }
+
+    private String sendToAmazonS3(String bucket, String fileName, byte[] pdfBytes) {
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(fileName)
+                .contentType("application/pdf")
+                .build();
+
+        s3Client.putObject(putObjectRequest, RequestBody.fromBytes(pdfBytes));
+        return fileName;
+    }
+
+    private Locale getLocale() {
+        return LocaleContextHolder.getLocale();
     }
 
     private Integer getCurrentInvoiceNumber(Contract contract) {
@@ -196,11 +300,20 @@ public class InvoiceService {
         return currentInvoiceNumber + 1;
     }
 
-    public Invoice updateInvoice(UUID invoiceId, UpdateInvoiceRequest request) {
+    public InvoiceFileResponse getInvoiceFile(UUID invoiceId) {
         Invoice invoice = findInvoiceById(invoiceId);
+        return getInvoiceFilePDF(invoice.getFile());
+    }
 
-        Invoice updatedInvoice = serviceConverter.convert(request, invoice, Invoice.class);
+    private InvoiceFileResponse getInvoiceFilePDF(String file) {
+        GetObjectRequest request = GetObjectRequest.builder()
+                .bucket("invoices")
+                .key(file)
+                .build();
 
-        return invoiceRepository.save(updatedInvoice);
+        String fileName = file.substring(file.lastIndexOf("/"));
+        byte[] fileContent = s3Client.getObject(request, ResponseTransformer.toBytes()).asByteArray();
+
+        return new InvoiceFileResponse(fileName, fileContent);
     }
 }
