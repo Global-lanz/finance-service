@@ -15,7 +15,7 @@ public class S3ClientProvider {
     @Bean
     public S3Client s3Client() {
         return S3Client.builder()
-                .endpointOverride(URI.create("http://localhost:9000"))
+                .endpointOverride(URI.create("http://minio:9000"))
                 .credentialsProvider(StaticCredentialsProvider.create(
                         AwsBasicCredentials.create("minioadmin", "minioadmin")
                 ))
