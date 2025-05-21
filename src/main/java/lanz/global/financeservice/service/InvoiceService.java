@@ -3,8 +3,8 @@ package lanz.global.financeservice.service;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
-import freemarker.template.TemplateException;
 import lanz.global.financeservice.api.request.payment.PaymentRequest;
+import lanz.global.financeservice.api.response.InvoiceFileResponse;
 import lanz.global.financeservice.api.response.invoice.CreateInvoiceRequest;
 import lanz.global.financeservice.api.response.invoice.UpdateInvoiceRequest;
 import lanz.global.financeservice.exception.BadRequestException;
@@ -25,15 +25,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -260,29 +257,6 @@ public class InvoiceService {
         StringWriter stringWriter = new StringWriter();
         template.process(data, stringWriter);
 
-//        String pathName = getPathName(customer.customerId());
-//        String htmlFileName = String.format("%s.html", invoice.getInvoiceNumber().toString());
-//        String pdfFileName = String.format("%s.pdf", invoice.getInvoiceNumber());
-//
-//        File path = new File(pathName);
-//        if (!path.exists()) {
-//            path.mkdirs();
-//        }
-//
-//        File file = new File(pathName, htmlFileName);
-//
-//        FileWriter fileWriter = new FileWriter(file);
-//        fileWriter.write(stringWriter.toString());
-//        fileWriter.close();
-//
-//        FileOutputStream outputStream = new FileOutputStream(String.format("%s/%s", pathName, pdfFileName));
-//
-//        PdfRendererBuilder builder = new PdfRendererBuilder();
-//        builder.useFastMode();
-//        builder.withUri(String.format("file://%s/%s", pathName, htmlFileName));
-//        builder.toStream(outputStream);
-//        builder.run();
-
         byte[] file = generatePdfFromHtml(stringWriter.toString());
 
         String htmlFileName = String.format("%s/%s/%s.pdf", customer.customerId().toString(), contract.getContractId().toString(), invoice.getInvoiceNumber().toString());
@@ -313,10 +287,6 @@ public class InvoiceService {
         return fileName;
     }
 
-    private String getPathName(UUID customerId) {
-        return String.format("/Users/maico/Downloads/pdf/customer/%s/invoices", customerId.toString());
-    }
-
     private Locale getLocale() {
         return LocaleContextHolder.getLocale();
     }
@@ -328,5 +298,22 @@ public class InvoiceService {
     private Integer generateNextInvoiceNumber(Contract contract) {
         int currentInvoiceNumber = invoiceRepository.findCurrentInvoiceNumber(contract.getContractId()).orElse(0);
         return currentInvoiceNumber + 1;
+    }
+
+    public InvoiceFileResponse getInvoiceFile(UUID invoiceId) {
+        Invoice invoice = findInvoiceById(invoiceId);
+        return getInvoiceFilePDF(invoice.getFile());
+    }
+
+    private InvoiceFileResponse getInvoiceFilePDF(String file) {
+        GetObjectRequest request = GetObjectRequest.builder()
+                .bucket("invoices")
+                .key(file)
+                .build();
+
+        String fileName = file.substring(file.lastIndexOf("/"));
+        byte[] fileContent = s3Client.getObject(request, ResponseTransformer.toBytes()).asByteArray();
+
+        return new InvoiceFileResponse(fileName, fileContent);
     }
 }
