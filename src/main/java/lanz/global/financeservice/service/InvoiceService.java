@@ -309,8 +309,8 @@ public class InvoiceService {
                 .contentType("application/pdf")
                 .build();
 
-        PutObjectResponse response = s3Client.putObject(putObjectRequest, RequestBody.fromBytes(pdfBytes));
-        return bucket + fileName;
+        s3Client.putObject(putObjectRequest, RequestBody.fromBytes(pdfBytes));
+        return fileName;
     }
 
     private String getPathName(UUID customerId) {
