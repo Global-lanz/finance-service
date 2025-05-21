@@ -4,7 +4,6 @@ import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import jakarta.ws.rs.InternalServerErrorException;
 import lanz.global.financeservice.api.request.payment.PaymentRequest;
 import lanz.global.financeservice.api.response.invoice.CreateInvoiceRequest;
 import lanz.global.financeservice.api.response.invoice.UpdateInvoiceRequest;
@@ -25,7 +24,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -58,6 +62,7 @@ public class InvoiceService {
     private final CustomerService customerService;
     private final CurrencyService currencyService;
     private final Configuration freemarkerConfig;
+    private final S3Client s3Client;
 
     public void createInvoices(UUID contractId) {
         Optional<Contract> optionalContract = contractRepository.findById(contractId);
@@ -234,13 +239,14 @@ public class InvoiceService {
         }
     }
 
-    private String generatePdf(Invoice invoice) throws TemplateException, IOException {
-        CustomerResponse customer = customerService.findCustomerById(invoice.getContract().getCustomerId());
-        Currency currency = currencyService.findCurrencyById(invoice.getContract().getCurrencyId());
+    private String generatePdf(Invoice invoice) throws Exception {
+        Contract contract = invoice.getContract();
+        CustomerResponse customer = customerService.findCustomerById(contract.getCustomerId());
+        Currency currency = currencyService.findCurrencyById(contract.getCurrencyId());
 
         Map<String, Object> data = new HashMap<>();
         data.put("invoiceNumber", invoice.getInvoiceNumber());
-        data.put("contractId", invoice.getContract().getContractId());
+        data.put("contractId", contract.getContractId());
         data.put("customer", customer.name());
         data.put("dueDate", invoice.getDueDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
         data.put("currency", currency.getSymbol());
@@ -254,28 +260,57 @@ public class InvoiceService {
         StringWriter stringWriter = new StringWriter();
         template.process(data, stringWriter);
 
-        String pathName = getPathName(customer.customerId());
-        String htmlFileName = String.format("%s.html", invoice.getInvoiceNumber().toString());
-        String pdfFileName = String.format("%s.pdf", invoice.getInvoiceNumber());
+//        String pathName = getPathName(customer.customerId());
+//        String htmlFileName = String.format("%s.html", invoice.getInvoiceNumber().toString());
+//        String pdfFileName = String.format("%s.pdf", invoice.getInvoiceNumber());
+//
+//        File path = new File(pathName);
+//        if (!path.exists()) {
+//            path.mkdirs();
+//        }
+//
+//        File file = new File(pathName, htmlFileName);
+//
+//        FileWriter fileWriter = new FileWriter(file);
+//        fileWriter.write(stringWriter.toString());
+//        fileWriter.close();
+//
+//        FileOutputStream outputStream = new FileOutputStream(String.format("%s/%s", pathName, pdfFileName));
+//
+//        PdfRendererBuilder builder = new PdfRendererBuilder();
+//        builder.useFastMode();
+//        builder.withUri(String.format("file://%s/%s", pathName, htmlFileName));
+//        builder.toStream(outputStream);
+//        builder.run();
 
-        File path = new File(pathName);
-        if (!path.exists()) {
-            path.mkdirs();
-        }
+        byte[] file = generatePdfFromHtml(stringWriter.toString());
 
-        File file = new File(pathName, htmlFileName);
+        String htmlFileName = String.format("%s/%s/%s.pdf", customer.customerId().toString(), contract.getContractId().toString(), invoice.getInvoiceNumber().toString());
 
-        FileWriter fileWriter = new FileWriter(file);
-        fileWriter.write(stringWriter.toString());
-        fileWriter.close();
+        return sendToAmazonS3("invoices", htmlFileName, file);
+    }
+
+    public byte[] generatePdfFromHtml(String html) throws Exception {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         PdfRendererBuilder builder = new PdfRendererBuilder();
         builder.useFastMode();
-        builder.withUri(String.format("file://%s/%s", pathName, htmlFileName));
-        builder.toStream(new FileOutputStream(String.format("%s/%s", pathName, pdfFileName)));
+        builder.withHtmlContent(html, null); // baseUri = null se não usa imagens externas
+        builder.toStream(outputStream);
         builder.run();
 
-        return pdfFileName;
+        return outputStream.toByteArray();
+    }
+
+    private String sendToAmazonS3(String bucket, String fileName, byte[] pdfBytes) {
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(fileName)
+                .contentType("application/pdf")
+                .build();
+
+        PutObjectResponse response = s3Client.putObject(putObjectRequest, RequestBody.fromBytes(pdfBytes));
+        return bucket + fileName;
     }
 
     private String getPathName(UUID customerId) {

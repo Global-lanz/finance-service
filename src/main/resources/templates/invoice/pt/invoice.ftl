@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8"/>
     <title>Fatura</title>
     <style>
         body {
@@ -60,7 +60,8 @@
     <div class="invoice-header">
         <h1>Fatura Nª ${invoiceNumber}</h1>
         <p><strong>Cliente:</strong> ${customer}</p>
-        <p><strong>Data de Vencimento:</strong> ${dueDate?date}</p>
+        <p><strong>Contrato:</strong> ${contractId}</p>
+        <p><strong>Data de Vencimento:</strong> ${dueDate}</p>
     </div>
 
     <table>
@@ -71,20 +72,18 @@
         </tr>
         </thead>
         <tbody>
-        <#list items as item>
-            <tr>
-                <td>${item.description}</td>
-                <td>${currency} ${item.unitPrice?string["#,##0.00"]}</td>
-            </tr>
-        </#list>
+        <tr>
+            <td>${description}</td>
+            <td>${currency} ${total}</td>
+        </tr>
         </tbody>
     </table>
 
-    <p class="total">Total: ${currency} ${total?string["#,##0.00"]}</p>
+    <p class="total">Total: ${currency} ${total}</p>
 
     <div class="footer">
-        Esta fatura foi gerada automaticamente. Entre em contato se tiver dúvidas.<br>
-        &copy; ${.now?string["yyyy"]} Global Lanz Technologies. Todos os direitos reservados.
+        Esta fatura foi gerada automaticamente. Entre em contato se tiver dúvidas.<br/>
+        © ${.now?string["yyyy"]} Global Lanz Technologies. Todos os direitos reservados.
     </div>
 </div>
 </body>
