@@ -28,6 +28,7 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.ByteArrayOutputStream;
@@ -306,14 +307,19 @@ public class InvoiceService {
     }
 
     private InvoiceFileResponse getInvoiceFilePDF(String file) {
-        GetObjectRequest request = GetObjectRequest.builder()
-                .bucket("invoices")
-                .key(file)
-                .build();
 
-        String fileName = file.substring(file.lastIndexOf("/"));
-        byte[] fileContent = s3Client.getObject(request, ResponseTransformer.toBytes()).asByteArray();
+        try {
+            GetObjectRequest request = GetObjectRequest.builder()
+                    .bucket("invoices")
+                    .key(file)
+                    .build();
 
-        return new InvoiceFileResponse(fileName, fileContent);
+            String fileName = file.substring(file.lastIndexOf("/"));
+            byte[] fileContent = s3Client.getObject(request, ResponseTransformer.toBytes()).asByteArray();
+
+            return new InvoiceFileResponse(fileName, fileContent);
+        } catch (NoSuchKeyException e) {
+            throw new BadRequestException("file");
+        }
     }
 }
