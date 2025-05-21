@@ -40,6 +40,9 @@ public class Invoice {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "file")
+    private String file;
+
     @Column(name = "company_id")
     private UUID companyId;
 
