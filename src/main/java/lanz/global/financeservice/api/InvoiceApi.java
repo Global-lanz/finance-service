@@ -7,6 +7,7 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import lanz.global.financeservice.api.config.Rules;
 import lanz.global.financeservice.api.request.payment.PaymentRequest;
+import lanz.global.financeservice.api.response.InvoiceFileResponse;
 import lanz.global.financeservice.api.response.invoice.CreateInvoiceRequest;
 import lanz.global.financeservice.api.response.invoice.InvoiceResponse;
 import lanz.global.financeservice.api.response.invoice.PaymentResponse;
@@ -17,6 +18,8 @@ import lanz.global.financeservice.service.InvoiceService;
 import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -84,5 +87,29 @@ public class InvoiceApi {
         Invoice invoice = invoiceService.updateInvoice(invoiceId, request);
 
         return ResponseEntity.ok(serviceConverter.convert(invoice, InvoiceResponse.class));
+    }
+
+    @GetMapping("/{invoiceId}")
+    @RolesAllowed(Rules.GET_INVOICE)
+    @ApiOperation(value = "Find invoice by ID", notes = "The endpoint retrieves the invoice by ID")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Invoice"), @ApiResponse(code = 404, message = "Not found")})
+    public ResponseEntity<InvoiceResponse> findInvoiceById(@PathVariable UUID invoiceId) {
+        Invoice invoice = invoiceService.findInvoiceById(invoiceId);
+
+        return ResponseEntity.ok(serviceConverter.convert(invoice, InvoiceResponse.class));
+    }
+
+    @GetMapping("/{invoiceId}/file")
+    @RolesAllowed(Rules.GET_INVOICE)
+    @ApiOperation(value = "Get invoice file", notes = "The endpoint retrieves the invoice file by ID")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Invoice created"), @ApiResponse(code = 404, message = "Not found")})
+    public ResponseEntity<byte[]> getInvoiceFile(@PathVariable UUID invoiceId) {
+
+        InvoiceFileResponse response = invoiceService.getInvoiceFile(invoiceId);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + response.fileName() + "\"")
+                .body(response.content());
     }
 }
