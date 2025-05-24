@@ -8,6 +8,7 @@ import lanz.global.financeservice.api.response.InvoiceFileResponse;
 import lanz.global.financeservice.api.response.invoice.CreateInvoiceRequest;
 import lanz.global.financeservice.api.response.invoice.UpdateInvoiceRequest;
 import lanz.global.financeservice.exception.BadRequestException;
+import lanz.global.financeservice.exception.InvoicePDFNotFound;
 import lanz.global.financeservice.external.api.customer.response.CustomerResponse;
 import lanz.global.financeservice.facade.impl.AuthenticationFacadeImpl;
 import lanz.global.financeservice.model.Contract;
@@ -319,7 +320,7 @@ public class InvoiceService {
 
             return new InvoiceFileResponse(fileName, fileContent);
         } catch (NoSuchKeyException e) {
-            throw new BadRequestException("file");
+            throw new InvoicePDFNotFound();
         }
     }
 }
