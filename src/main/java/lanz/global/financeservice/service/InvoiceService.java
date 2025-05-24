@@ -179,7 +179,7 @@ public class InvoiceService {
         return paymentRepository.save(payment);
     }
 
-    private Invoice findInvoiceById(UUID invoiceId) {
+    public Invoice findInvoiceById(UUID invoiceId) {
         UUID companyId = authenticationFacade.getCompanyId();
         return invoiceRepository.findByInvoiceIdAndCompanyId(invoiceId, companyId).orElseThrow(() -> new BadRequestException("invoice"));
     }

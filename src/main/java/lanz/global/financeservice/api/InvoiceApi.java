@@ -89,10 +89,20 @@ public class InvoiceApi {
         return ResponseEntity.ok(serviceConverter.convert(invoice, InvoiceResponse.class));
     }
 
+    @GetMapping("{invoiceId}")
+    @RolesAllowed(Rules.GET_INVOICE)
+    @ApiOperation(value = "Find invoice by ID", notes = "The endpoint retrieves the invoice by ID")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Invoice"), @ApiResponse(code = 404, message = "Not found")})
+    public ResponseEntity<InvoiceResponse> findInvoiceById(@PathVariable UUID invoiceId) {
+        Invoice invoice = invoiceService.findInvoiceById(invoiceId);
+
+        return ResponseEntity.ok(serviceConverter.convert(invoice, InvoiceResponse.class));
+    }
+
     @GetMapping("{invoiceId}/file")
     @RolesAllowed(Rules.GET_INVOICE)
     @ApiOperation(value = "Get invoice file", notes = "The endpoint retrieves the invoice file by ID")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Invoice created"), @ApiResponse(code = 400, message = "Bad request")})
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Invoice created"), @ApiResponse(code = 404, message = "Not found")})
     public ResponseEntity<byte[]> getInvoiceFile(@PathVariable UUID invoiceId) {
 
         InvoiceFileResponse response = invoiceService.getInvoiceFile(invoiceId);
