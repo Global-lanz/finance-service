@@ -17,6 +17,7 @@ public class ContractRequestConverter implements Converter<ContractRequest, Cont
         contract.setEnd(source.end());
         contract.setTerminationClause(source.terminationClause());
         contract.setPenaltyFee(source.penaltyFee());
+        contract.setDescription(source.description());
         contract.setCustomerId(source.customerId());
         contract.setCurrencyId(source.currencyId());
         return contract;
