@@ -94,6 +94,10 @@ public class ContractService {
         return contractRepository.save(updatedContract);
     }
 
+    public List<ContractStatusTransition> findAllContractStatusTransitions() {
+        return contractStatusTransitionRepository.findAll();
+    }
+
     private void validateDeleteContract(Contract contract) {
         var permittedTypes = List.of(ContractTypeEnum.QUOTE, ContractTypeEnum.AMENDMENT_QUOTE, ContractTypeEnum.CANCELLATION_QUOTE);
         if (!permittedTypes.contains(contract.getType())) {
@@ -139,9 +143,5 @@ public class ContractService {
 
     private void validateCustomerExists(UUID customerId) {
         customerService.findCustomerById(customerId);
-    }
-
-    public List<ContractStatusTransition> findAllContractStatusTransitions() {
-        return contractStatusTransitionRepository.findAll();
     }
 }
