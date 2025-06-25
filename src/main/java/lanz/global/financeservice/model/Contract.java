@@ -55,6 +55,9 @@ public class Contract {
     @Column(name = "penalty_fee")
     private BigDecimal penaltyFee;
 
+    @Column(name = "description")
+    private String description;
+
     @Column(name = "customer_id")
     private UUID customerId;
 
