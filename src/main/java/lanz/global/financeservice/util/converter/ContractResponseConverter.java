@@ -19,6 +19,7 @@ public class ContractResponseConverter implements Converter<Contract, ContractRe
                 source.getType(),
                 source.getTerminationClause(),
                 source.getPenaltyFee(),
+                source.getDescription(),
                 source.getCurrencyId());
     }
 }
