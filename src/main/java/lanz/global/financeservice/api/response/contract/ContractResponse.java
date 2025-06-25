@@ -19,5 +19,6 @@ public record ContractResponse(UUID contractId,
                                ContractTypeEnum type,
                                String terminationClause,
                                BigDecimal penaltyFee,
+                               String description,
                                UUID currencyId) implements Serializable {
 }
