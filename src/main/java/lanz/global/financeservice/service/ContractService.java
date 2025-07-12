@@ -2,6 +2,7 @@ package lanz.global.financeservice.service;
 
 import lanz.global.financeservice.api.request.contract.ContractRequest;
 import lanz.global.financeservice.api.request.contract.ContractStatusUpdateRequest;
+import lanz.global.financeservice.api.request.contract.GetContractParams;
 import lanz.global.financeservice.event.producer.InvoiceProducer;
 import lanz.global.financeservice.exception.BadRequestException;
 import lanz.global.financeservice.exception.NotFoundException;
@@ -50,9 +51,9 @@ public class ContractService {
         return contractRepository.findByContractIdAndCompanyId(contractId, companyId).orElseThrow(() -> new NotFoundException("contract"));
     }
 
-    public List<Contract> findAllContracts() {
+    public List<Contract> findAllContracts(GetContractParams params) {
         UUID companyId = authenticationFacade.getCompanyId();
-        return contractRepository.findAllByCompanyId(companyId);
+        return contractRepository.findAllByParameters(params.customerId(), companyId);
     }
 
     public void deleteContractById(UUID contractId) {

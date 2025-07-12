@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lanz.global.financeservice.api.config.Rules;
 import lanz.global.financeservice.api.request.contract.ContractRequest;
 import lanz.global.financeservice.api.request.contract.ContractStatusUpdateRequest;
+import lanz.global.financeservice.api.request.contract.GetContractParams;
 import lanz.global.financeservice.api.response.contract.ContractResponse;
 import lanz.global.financeservice.api.response.contract.ContractStatusTransitionResponse;
 import lanz.global.financeservice.api.response.invoice.InvoiceResponse;
@@ -75,8 +76,8 @@ public class ContractApi {
     @RolesAllowed(Rules.LIST_CONTRACTS)
     @ApiOperation(value = "Find contracts", notes = "The endpoint retrieves a list of contracts")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "List of contracts")})
-    public ResponseEntity<List<ContractResponse>> findAllContracts() {
-        List<Contract> contracts = contractService.findAllContracts();
+    public ResponseEntity<List<ContractResponse>> findAllContracts(GetContractParams params) {
+        List<Contract> contracts = contractService.findAllContracts(params);
 
         return ResponseEntity.ok(serviceConverter.convertList(contracts, ContractResponse.class));
     }
