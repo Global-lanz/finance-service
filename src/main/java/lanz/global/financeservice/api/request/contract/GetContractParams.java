@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springdoc.core.converters.models.Pageable;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,9 +12,13 @@ import java.util.UUID;
 @Setter
 public class GetContractParams extends Pageable {
 
-    private String customerId;
+    private UUID customerId;
 
     public GetContractParams(int page, int size, List<String> sort) {
         super(page, size, sort);
+    }
+
+    public GetContractParams() {
+        super(0, 0, Collections.emptyList());
     }
 }

@@ -90,7 +90,7 @@ public class ContractApi {
     @RolesAllowed(Rules.LIST_CONTRACTS)
     @ApiOperation(value = "Find contracts", notes = "The endpoint retrieves a list of contracts")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "List of contracts")})
-    public ResponseEntity<Page<ContractResponse>> findAllContracts(@ModelAttribute GetContractParams params) {
+    public ResponseEntity<Page<ContractResponse>> findAllContracts(@Valid @ModelAttribute GetContractParams params) {
         Page<Contract> page = contractService.findAllContracts(params);
 
         List<ContractResponse> contracts = serviceConverter.convertList(page.toList(), ContractResponse.class);
