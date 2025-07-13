@@ -17,6 +17,7 @@ import lanz.global.financeservice.repository.CurrencyRepository;
 import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -51,9 +52,14 @@ public class ContractService {
         return contractRepository.findByContractIdAndCompanyId(contractId, companyId).orElseThrow(() -> new NotFoundException("contract"));
     }
 
-    public List<Contract> findAllContracts(GetContractParams params) {
+    public List<Contract> findAllContracts() {
         UUID companyId = authenticationFacade.getCompanyId();
-        return contractRepository.findAllByParameters(params.customerId(), companyId);
+        return contractRepository.findAllByCompanyId(companyId);
+    }
+
+    public Page<Contract> findAllContracts(GetContractParams params) {
+        UUID companyId = authenticationFacade.getCompanyId();
+        return contractRepository.findAllByFilter(companyId, params);
     }
 
     public void deleteContractById(UUID contractId) {

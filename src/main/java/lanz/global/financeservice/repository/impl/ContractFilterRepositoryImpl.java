@@ -1,7 +1,6 @@
 package lanz.global.financeservice.repository.impl;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
@@ -11,8 +10,6 @@ import lanz.global.financeservice.repository.ContractFilterRepository;
 import lanz.global.financeservice.repository.util.AbstractRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -43,7 +40,7 @@ public class ContractFilterRepositoryImpl extends AbstractRepository implements 
     private Predicate filter(GetContractParams params, Root<Contract> from) {
         List<Predicate> filter = new ArrayList<>();
         if (params.getCustomerId() != null) {
-            filter.add(equal());
+            filter.add(equal(from, "customerId", params.getCustomerId()));
         }
         return criteriaBuilder.and(filter.toArray(new Predicate[0]));
     }

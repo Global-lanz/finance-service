@@ -20,6 +20,8 @@ import lanz.global.financeservice.service.InvoiceService;
 import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -76,10 +78,22 @@ public class ContractApi {
     @RolesAllowed(Rules.LIST_CONTRACTS)
     @ApiOperation(value = "Find contracts", notes = "The endpoint retrieves a list of contracts")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "List of contracts")})
-    public ResponseEntity<List<ContractResponse>> findAllContracts(GetContractParams params) {
-        List<Contract> contracts = contractService.findAllContracts(params);
+    public ResponseEntity<List<ContractResponse>> findAllContracts() {
+        List<Contract> contracts = contractService.findAllContracts();
 
         return ResponseEntity.ok(serviceConverter.convertList(contracts, ContractResponse.class));
+    }
+
+    @GetMapping("/search")
+    @RolesAllowed(Rules.LIST_CONTRACTS)
+    @ApiOperation(value = "Find contracts", notes = "The endpoint retrieves a list of contracts")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "List of contracts")})
+    public ResponseEntity<Page<ContractResponse>> findAllContracts(GetContractParams params) {
+        Page<Contract> page = contractService.findAllContracts(params);
+
+        List<ContractResponse> contracts = serviceConverter.convertList(page.toList(), ContractResponse.class);
+
+        return ResponseEntity.ok(new PageImpl<>(contracts, page.getPageable(), page.getTotalElements()));
     }
 
     @DeleteMapping("/{contractId}")
