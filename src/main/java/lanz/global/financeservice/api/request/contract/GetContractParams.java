@@ -11,7 +11,7 @@ import java.util.UUID;
 @Setter
 public class GetContractParams extends Pageable {
 
-    private UUID customerId;
+    private String customerId;
 
     public GetContractParams(int page, int size, List<String> sort) {
         super(page, size, sort);
