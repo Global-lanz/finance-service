@@ -31,8 +31,8 @@ public abstract class AbstractRepository<T> {
         return criteriaQuery.from(entityClass);
     }
 
-    protected void sort(CriteriaQuery<T> criteriaQuery, Root<T> from) {
-        criteriaQuery.orderBy(criteriaBuilder.asc(from.get("contractId")));
+    protected void sort(CriteriaQuery<T> criteriaQuery, Root<T> from, String attributeName) {
+        criteriaQuery.orderBy(criteriaBuilder.asc(from.get(attributeName)));
     }
 
     protected Page<T> pageable(Pageable params, Predicate predicate, CriteriaQuery<T> query, Class<T> entityClass) {
@@ -55,6 +55,6 @@ public abstract class AbstractRepository<T> {
 
     protected Predicate equal(Path<T> from, String attributeName, Object parameter) {
         criteriaBuilder.equal(from.get(attributeName), parameter);
-        return criteriaBuilder.equal(from.get("customerId"), parameter);
+        return criteriaBuilder.equal(from.get(attributeName), parameter);
     }
 }

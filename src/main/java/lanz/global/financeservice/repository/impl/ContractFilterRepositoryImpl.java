@@ -31,11 +31,10 @@ public class ContractFilterRepositoryImpl extends AbstractRepository implements 
         Predicate predicate = filter(params, from);
 
         query.where(predicate);
-        sort(query, from);
+        sort(query, from, "contractId");
 
         return pageable(params, predicate, query, Contract.class);
     }
-
 
     private Predicate filter(GetContractParams params, Root<Contract> from) {
         List<Predicate> filter = new ArrayList<>();
