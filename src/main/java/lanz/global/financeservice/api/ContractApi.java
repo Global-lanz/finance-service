@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lanz.global.financeservice.api.config.Rules;
 import lanz.global.financeservice.api.request.contract.ContractRequest;
 import lanz.global.financeservice.api.request.contract.ContractStatusUpdateRequest;
+import lanz.global.financeservice.api.request.contract.GetContractParams;
 import lanz.global.financeservice.api.response.contract.ContractResponse;
 import lanz.global.financeservice.api.response.contract.ContractStatusTransitionResponse;
 import lanz.global.financeservice.api.response.invoice.InvoiceResponse;
@@ -19,14 +20,18 @@ import lanz.global.financeservice.service.InvoiceService;
 import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -79,6 +84,18 @@ public class ContractApi {
         List<Contract> contracts = contractService.findAllContracts();
 
         return ResponseEntity.ok(serviceConverter.convertList(contracts, ContractResponse.class));
+    }
+
+    @GetMapping("/search")
+    @RolesAllowed(Rules.LIST_CONTRACTS)
+    @ApiOperation(value = "Find contracts", notes = "The endpoint retrieves a list of contracts")
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "List of contracts")})
+    public ResponseEntity<Page<ContractResponse>> findAllContracts(@Valid @ModelAttribute GetContractParams params) {
+        Page<Contract> page = contractService.findAllContracts(params);
+
+        List<ContractResponse> contracts = serviceConverter.convertList(page.toList(), ContractResponse.class);
+
+        return ResponseEntity.ok(new PageImpl<>(contracts, page.getPageable(), page.getTotalElements()));
     }
 
     @DeleteMapping("/{contractId}")
