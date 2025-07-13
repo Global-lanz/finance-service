@@ -15,16 +15,8 @@ import org.springframework.data.domain.Sort;
 
 public abstract class AbstractRepository<T> {
 
-    protected final EntityManager entityManager;
-    protected final CriteriaBuilder criteriaBuilder;
-
-    protected AbstractRepository(EntityManager entityManager) {
-        this.entityManager = entityManager;
-        this.criteriaBuilder = entityManager.getCriteriaBuilder();
-    }
-
     protected CriteriaQuery<T> criteriaQuery(Class<T> entityClass) {
-        return criteriaBuilder.createQuery(entityClass);
+        return getCriteriaBuilder().createQuery(entityClass);
     }
 
     protected Root<T> from(CriteriaQuery<T> criteriaQuery, Class<T> entityClass) {
@@ -32,11 +24,11 @@ public abstract class AbstractRepository<T> {
     }
 
     protected void sort(CriteriaQuery<T> criteriaQuery, Root<T> from, String attributeName) {
-        criteriaQuery.orderBy(criteriaBuilder.asc(from.get(attributeName)));
+        criteriaQuery.orderBy(getCriteriaBuilder().asc(from.get(attributeName)));
     }
 
     protected Page<T> pageable(Pageable params, Predicate predicate, CriteriaQuery<T> query, Class<T> entityClass) {
-        TypedQuery<T> typedQuery = entityManager.createQuery(query);
+        TypedQuery<T> typedQuery = getEntityManager().createQuery(query);
         typedQuery.setFirstResult(params.getPage() * params.getSize());
         typedQuery.setMaxResults(params.getSize());
 
@@ -47,14 +39,19 @@ public abstract class AbstractRepository<T> {
     }
 
     protected long countByFilter(Predicate predicate, Class<T> entityClass) {
-        CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
+        CriteriaQuery<Long> countQuery = getCriteriaBuilder().createQuery(Long.class);
         Root<T> from = countQuery.from(entityClass);
-        countQuery.select(criteriaBuilder.count(from)).where(predicate);
-        return entityManager.createQuery(countQuery).getSingleResult();
+        countQuery.select(getCriteriaBuilder().count(from)).where(predicate);
+        return getEntityManager().createQuery(countQuery).getSingleResult();
     }
 
     protected Predicate equal(Path<T> from, String attributeName, Object parameter) {
-        criteriaBuilder.equal(from.get(attributeName), parameter);
-        return criteriaBuilder.equal(from.get(attributeName), parameter);
+        getCriteriaBuilder().equal(from.get(attributeName), parameter);
+        return getCriteriaBuilder().equal(from.get(attributeName), parameter);
     }
+
+    protected abstract EntityManager getEntityManager();
+
+    protected abstract CriteriaBuilder getCriteriaBuilder();
+
 }
