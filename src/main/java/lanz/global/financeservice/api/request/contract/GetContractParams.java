@@ -21,4 +21,9 @@ public class GetContractParams extends Pageable {
     public GetContractParams() {
         super(0, 0, Collections.emptyList());
     }
+
+    public GetContractParams(int page, int size, List<String> sort, UUID customerId) {
+        super(page, size, sort);
+        this.customerId = customerId;
+    }
 }
