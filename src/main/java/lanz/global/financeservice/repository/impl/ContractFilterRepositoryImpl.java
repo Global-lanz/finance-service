@@ -49,9 +49,6 @@ public class ContractFilterRepositoryImpl extends AbstractRepository implements 
 
     @Override
     protected CriteriaBuilder getCriteriaBuilder() {
-        if (criteriaBuilder == null) {
-            criteriaBuilder = entityManager.getCriteriaBuilder();
-        }
-        return criteriaBuilder;
+        return entityManager.getCriteriaBuilder();
     }
 }
