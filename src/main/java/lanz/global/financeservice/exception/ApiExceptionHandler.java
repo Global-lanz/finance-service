@@ -2,7 +2,6 @@ package lanz.global.financeservice.exception;
 
 import feign.FeignException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.ws.rs.BadRequestException;
 import lanz.global.financeservice.exception.response.ErrorResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -35,14 +34,6 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         String message = messageSource.getMessage("exception.internal-server-error.message", null, getLocale(req));
         log.error(message, ex);
         return ResponseEntity.internalServerError().body(createErrorDTO(title, message));
-    }
-
-    @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ErrorResponse> handleBadRequestException(HttpServletRequest req, BadRequestException ex) {
-        String title = messageSource.getMessage("exception.bad-request.title", null, getLocale(req));
-        String message = ex.getMessage();
-        log.warn(message, ex);
-        return ResponseEntity.badRequest().body(createErrorDTO(title, message));
     }
 
     @ExceptionHandler(ServiceException.class)
