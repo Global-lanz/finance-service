@@ -11,18 +11,15 @@ import lanz.global.financeservice.model.Contract;
 import lanz.global.financeservice.repository.ContractFilterRepository;
 import lanz.global.financeservice.repository.util.AbstractRepository;
 import org.springframework.data.domain.Page;
-import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Repository
 public class ContractFilterRepositoryImpl extends AbstractRepository implements ContractFilterRepository {
 
     @PersistenceContext
     private EntityManager entityManager;
-
     private CriteriaBuilder criteriaBuilder;
 
     @Override
