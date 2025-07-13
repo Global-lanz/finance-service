@@ -25,6 +25,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -89,7 +90,7 @@ public class ContractApi {
     @RolesAllowed(Rules.LIST_CONTRACTS)
     @ApiOperation(value = "Find contracts", notes = "The endpoint retrieves a list of contracts")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "List of contracts")})
-    public ResponseEntity<Page<ContractResponse>> findAllContracts(@RequestParam GetContractParams params) {
+    public ResponseEntity<Page<ContractResponse>> findAllContracts(@ModelAttribute GetContractParams params) {
         Page<Contract> page = contractService.findAllContracts(params);
 
         List<ContractResponse> contracts = serviceConverter.convertList(page.toList(), ContractResponse.class);

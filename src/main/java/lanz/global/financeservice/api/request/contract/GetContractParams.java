@@ -1,6 +1,5 @@
 package lanz.global.financeservice.api.request.contract;
 
-import jakarta.ws.rs.QueryParam;
 import lombok.Getter;
 import lombok.Setter;
 import org.springdoc.core.converters.models.Pageable;
@@ -12,7 +11,6 @@ import java.util.UUID;
 @Setter
 public class GetContractParams extends Pageable {
 
-    @QueryParam("customerId")
     private UUID customerId;
 
     public GetContractParams(int page, int size, List<String> sort) {
