@@ -13,6 +13,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
+import java.util.List;
+
 public abstract class AbstractRepository<T> {
 
     protected CriteriaQuery<T> criteriaQuery(Class<T> entityClass) {
@@ -27,7 +29,7 @@ public abstract class AbstractRepository<T> {
         criteriaQuery.orderBy(getCriteriaBuilder().asc(from.get(attributeName)));
     }
 
-    protected Page<T> pageable(Pageable params, Predicate predicate, CriteriaQuery<T> query, Class<T> entityClass) {
+    protected Page<T> pageable(Pageable params, List<Predicate> predicates, CriteriaQuery<T> query, Class<T> entityClass) {
         TypedQuery<T> typedQuery = getEntityManager().createQuery(query);
         typedQuery.setFirstResult(params.getPage() * params.getSize());
         typedQuery.setMaxResults(params.getSize());
@@ -35,14 +37,18 @@ public abstract class AbstractRepository<T> {
         Sort sort = Sort.by(Sort.Direction.ASC, params.getSort().toArray(new String[0]));
         PageRequest pageRequest = PageRequest.of(params.getPage(), params.getSize(), sort);
 
-        return new PageImpl<>(typedQuery.getResultList(), pageRequest, countByFilter(predicate, entityClass));
+        return new PageImpl<>(typedQuery.getResultList(), pageRequest, countByFilter(predicates, entityClass));
     }
 
-    protected long countByFilter(Predicate predicate, Class<T> entityClass) {
+    protected long countByFilter(List<Predicate> predicates, Class<T> entityClass) {
         CriteriaQuery<Long> countQuery = getCriteriaBuilder().createQuery(Long.class);
         Root<T> from = countQuery.from(entityClass);
-        countQuery.select(getCriteriaBuilder().count(from)).where(predicate);
+        countQuery.select(getCriteriaBuilder().count(from)).where(predicate(predicates));
         return getEntityManager().createQuery(countQuery).getSingleResult();
+    }
+
+    protected Predicate predicate(List<Predicate> predicates) {
+        return getCriteriaBuilder().and(predicates.toArray(new Predicate[0]));
     }
 
     protected Predicate equal(Path<T> from, String attributeName, Object parameter) {

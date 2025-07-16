@@ -26,20 +26,22 @@ public class ContractFilterRepositoryImpl extends AbstractRepository implements 
     public Page<Contract> findAllByFilter(UUID companyId, GetContractParams params) {
         CriteriaQuery<Contract> query = criteriaQuery(Contract.class);
         Root<Contract> from = from(query, Contract.class);
-        Predicate predicate = filter(params, from);
+
+        List<Predicate> predicates = getFilterList(params, from);
+        Predicate predicate = predicate(predicates);
 
         query.where(predicate);
         sort(query, from, "contractId");
 
-        return pageable(params, predicate, query, Contract.class);
+        return pageable(params, predicates, query, Contract.class);
     }
 
-    private Predicate filter(GetContractParams params, Root<Contract> from) {
-        List<Predicate> filter = new ArrayList<>();
+    private List<Predicate> getFilterList(GetContractParams params, Root<Contract> from) {
+        List<Predicate> predicates = new ArrayList<>();
         if (params.getCustomerId() != null) {
-            filter.add(equal(from, "customerId", params.getCustomerId()));
+            predicates.add(equal(from, "customerId", params.getCustomerId()));
         }
-        return getCriteriaBuilder().and(filter.toArray(new Predicate[0]));
+        return predicates;
     }
 
     @Override
