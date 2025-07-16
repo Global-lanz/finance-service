@@ -21,7 +21,7 @@ public class ContractFilterRepositoryImpl extends AbstractRepository implements 
 
 
     @PersistenceUnit
-    private EntityManagerFactory entityManagerFactory;
+    private EntityManager entityManager;
 
     @Override
     public Page<Contract> findAllByFilter(UUID companyId, GetContractParams params) {
@@ -47,11 +47,11 @@ public class ContractFilterRepositoryImpl extends AbstractRepository implements 
 
     @Override
     protected EntityManager getEntityManager() {
-        return entityManagerFactory.createEntityManager();
+        return entityManager;
     }
 
     @Override
     protected CriteriaBuilder getCriteriaBuilder() {
-        return entityManagerFactory.getCriteriaBuilder();
+        return entityManager.getCriteriaBuilder();
     }
 }
