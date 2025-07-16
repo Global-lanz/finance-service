@@ -9,9 +9,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface ContractRepository extends JpaRepository<Contract, UUID> {
+public interface ContractRepository extends ContractFilterRepository, JpaRepository<Contract, UUID> {
 
     Optional<Contract> findByContractIdAndCompanyId(UUID contractId, UUID companyId);
 
     List<Contract> findAllByCompanyId(UUID companyId);
+
 }
