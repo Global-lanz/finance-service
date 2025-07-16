@@ -1,7 +1,8 @@
 package lanz.global.financeservice.repository.impl;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.PersistenceUnit;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Predicate;
@@ -18,9 +19,9 @@ import java.util.UUID;
 
 public class ContractFilterRepositoryImpl extends AbstractRepository implements ContractFilterRepository {
 
-    @PersistenceContext
-    private EntityManager entityManager;
-    private CriteriaBuilder criteriaBuilder;
+
+    @PersistenceUnit
+    private EntityManagerFactory entityManagerFactory;
 
     @Override
     public Page<Contract> findAllByFilter(UUID companyId, GetContractParams params) {
@@ -46,11 +47,11 @@ public class ContractFilterRepositoryImpl extends AbstractRepository implements 
 
     @Override
     protected EntityManager getEntityManager() {
-        return entityManager;
+        return entityManagerFactory.createEntityManager();
     }
 
     @Override
     protected CriteriaBuilder getCriteriaBuilder() {
-        return entityManager.getCriteriaBuilder();
+        return entityManagerFactory.getCriteriaBuilder();
     }
 }
