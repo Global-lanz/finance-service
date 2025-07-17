@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class CurrencyService {
 
     private final CurrencyRepository currencyRepository;

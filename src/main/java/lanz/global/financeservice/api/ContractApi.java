@@ -37,7 +37,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/finance/contract")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class ContractApi {
 
     private final ContractService contractService;
