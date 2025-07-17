@@ -2,6 +2,7 @@ package lanz.global.financeservice.service;
 
 import lanz.global.financeservice.api.request.contract.ContractRequest;
 import lanz.global.financeservice.api.request.contract.ContractStatusUpdateRequest;
+import lanz.global.financeservice.api.request.contract.GetContractParams;
 import lanz.global.financeservice.event.producer.InvoiceProducer;
 import lanz.global.financeservice.exception.BadRequestException;
 import lanz.global.financeservice.exception.NotFoundException;
@@ -13,9 +14,11 @@ import lanz.global.financeservice.model.ContractTypeEnum;
 import lanz.global.financeservice.repository.ContractRepository;
 import lanz.global.financeservice.repository.ContractStatusTransitionRepository;
 import lanz.global.financeservice.repository.CurrencyRepository;
+import lanz.global.financeservice.repository.impl.ContractRepositoryFilter;
 import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,11 +26,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class ContractService {
 
     private final ServiceConverter serviceConverter;
     private final ContractRepository contractRepository;
+    private final ContractRepositoryFilter contractRepositoryFilter;
     private final CustomerService customerService;
     private final AuthenticationFacade authenticationFacade;
     private final ContractStatusTransitionRepository contractStatusTransitionRepository;
@@ -53,6 +57,11 @@ public class ContractService {
     public List<Contract> findAllContracts() {
         UUID companyId = authenticationFacade.getCompanyId();
         return contractRepository.findAllByCompanyId(companyId);
+    }
+
+    public Page<Contract> findAllContracts(GetContractParams params) {
+        UUID companyId = authenticationFacade.getCompanyId();
+        return contractRepositoryFilter.findAllByFilter(companyId, params);
     }
 
     public void deleteContractById(UUID contractId) {

@@ -34,7 +34,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/finance/invoice")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class InvoiceApi {
 
     private final InvoiceService invoiceService;

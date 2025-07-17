@@ -11,7 +11,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class ContractResponseConverter implements Converter<Contract, ContractResponse> {
 
     private final CustomerService customerService;
