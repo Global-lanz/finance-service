@@ -15,20 +15,12 @@ public class PageRequest implements Pageable, Serializable {
 
     private int pageNumber;
     private int pageSize;
-    private int offset;
     private Sort sort;
 
     public PageRequest(int pageNumber, int pageSize, Sort sort) {
         this.pageNumber = pageNumber;
         this.pageSize = pageSize;
         this.sort = sort;
-    }
-
-    public PageRequest(int pageNumber, int pageSize, Sort sort, int offset) {
-        this.pageNumber = pageNumber;
-        this.pageSize = pageSize;
-        this.sort = sort;
-        this.offset = offset;
     }
 
     @Override
@@ -45,7 +37,7 @@ public class PageRequest implements Pageable, Serializable {
 
     @Override
     public long getOffset() {
-        return offset;
+        return (long) this.pageNumber * (long) this.pageSize;
     }
 
     @Override
