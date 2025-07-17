@@ -6,12 +6,11 @@ import lanz.global.financeservice.external.api.customer.response.CustomerRespons
 import lanz.global.financeservice.model.Contract;
 import lanz.global.financeservice.service.CustomerService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class ContractResponseConverter implements Converter<Contract, ContractResponse> {
 
     private final CustomerService customerService;
