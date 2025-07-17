@@ -6,7 +6,6 @@ import lanz.global.financeservice.event.Event;
 import lanz.global.financeservice.event.EventTypeEnum;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +14,7 @@ import java.util.UUID;
 
 @Log4j2
 @Component
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class InvoiceProducer {
 
     public static final String INVOICE_TOPIC = "invoice-topic";
