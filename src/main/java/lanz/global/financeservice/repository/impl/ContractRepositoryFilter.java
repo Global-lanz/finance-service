@@ -5,7 +5,6 @@ import lanz.global.financeservice.model.Contract;
 import lanz.global.financeservice.repository.ContractRepository;
 import lanz.global.financeservice.repository.specification.ContractSpecification;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;

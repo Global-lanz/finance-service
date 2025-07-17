@@ -22,7 +22,6 @@ import lanz.global.financeservice.repository.InvoiceRepository;
 import lanz.global.financeservice.repository.PaymentRepository;
 import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.sync.RequestBody;

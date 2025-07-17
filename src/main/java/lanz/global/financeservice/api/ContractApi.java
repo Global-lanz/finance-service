@@ -19,7 +19,6 @@ import lanz.global.financeservice.service.ContractService;
 import lanz.global.financeservice.service.InvoiceService;
 import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;

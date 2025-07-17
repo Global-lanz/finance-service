@@ -17,7 +17,6 @@ import lanz.global.financeservice.repository.CurrencyRepository;
 import lanz.global.financeservice.repository.impl.ContractRepositoryFilter;
 import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
