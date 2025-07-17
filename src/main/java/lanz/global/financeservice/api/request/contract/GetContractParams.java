@@ -1,8 +1,8 @@
 package lanz.global.financeservice.api.request.contract;
 
+import lanz.global.financeservice.api.request.PageRequest;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 import java.io.Serial;
