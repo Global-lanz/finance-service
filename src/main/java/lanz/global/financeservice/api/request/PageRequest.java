@@ -13,20 +13,20 @@ public class PageRequest implements Pageable, Serializable {
     @Serial
     private static final long serialVersionUID = 910997642915720053L;
 
-    private int pageSize;
     private int pageNumber;
+    private int pageSize;
     private int offset;
     private Sort sort;
 
-    public PageRequest(int pageSize, int pageNumber, Sort sort) {
-        this.pageSize = pageSize;
+    public PageRequest(int pageNumber, int pageSize, Sort sort) {
         this.pageNumber = pageNumber;
+        this.pageSize = pageSize;
         this.sort = sort;
     }
 
-    public PageRequest(int pageSize, int pageNumber, Sort sort, int offset) {
-        this.pageSize = pageSize;
+    public PageRequest(int pageNumber, int pageSize, Sort sort, int offset) {
         this.pageNumber = pageNumber;
+        this.pageSize = pageSize;
         this.sort = sort;
         this.offset = offset;
     }
