@@ -5,7 +5,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lanz.global.financeservice.exception.response.ErrorResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpStatus;
@@ -22,7 +21,7 @@ import java.util.Locale;
 
 @Log4j2
 @ControllerAdvice
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     private final MessageSource messageSource;
