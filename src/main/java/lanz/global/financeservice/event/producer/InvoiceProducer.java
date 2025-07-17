@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Log4j2
 @Component
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class InvoiceProducer {
 
     public static final String INVOICE_TOPIC = "invoice-topic";
