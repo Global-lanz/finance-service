@@ -2,8 +2,13 @@ package lanz.global.financeservice.exception;
 
 import lombok.Getter;
 
+import java.io.Serial;
+
 @Getter
 public class ServiceException extends RuntimeException {
+
+    @Serial
+    private static final long serialVersionUID = -6961242570378717595L;
 
     private final String title;
     private final String message;

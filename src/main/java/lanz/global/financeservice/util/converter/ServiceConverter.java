@@ -1,7 +1,6 @@
 package lanz.global.financeservice.util.converter;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 
@@ -9,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class ServiceConverter {
 
     private final ConversionService conversionService;

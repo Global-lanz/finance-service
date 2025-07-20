@@ -17,7 +17,6 @@ import lanz.global.financeservice.model.Payment;
 import lanz.global.financeservice.service.InvoiceService;
 import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +33,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/finance/invoice")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class InvoiceApi {
 
     private final InvoiceService invoiceService;
