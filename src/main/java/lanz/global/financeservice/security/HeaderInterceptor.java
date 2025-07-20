@@ -3,11 +3,11 @@ package lanz.global.financeservice.security;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.ws.rs.core.HttpHeaders;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
@@ -17,18 +17,8 @@ public class HeaderInterceptor implements RequestInterceptor {
 
     @Override
     public void apply(RequestTemplate requestTemplate) {
-        String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
-        String accept = request.getHeader(HttpHeaders.ACCEPT);
-        String language = request.getHeader(HttpHeaders.ACCEPT_LANGUAGE);
-
-        put(HttpHeaders.AUTHORIZATION, authorization, requestTemplate);
-        put(HttpHeaders.ACCEPT, accept, requestTemplate);
-        put(HttpHeaders.ACCEPT_LANGUAGE, language, requestTemplate);
-    }
-
-    private void put(String key, String value, RequestTemplate requestTemplate) {
-        if (key != null && value != null) {
-            requestTemplate.header(key, List.of(value));
-        }
+        Stream.ofNullable(requestTemplate.headers())
+                .flatMap(headers -> headers.entrySet().stream())
+                .forEach(entry -> requestTemplate.header(entry.getKey(), entry.getValue()));
     }
 }
