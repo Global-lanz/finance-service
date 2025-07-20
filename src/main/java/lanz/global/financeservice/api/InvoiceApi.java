@@ -18,6 +18,7 @@ import lanz.global.financeservice.service.InvoiceService;
 import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -73,9 +74,9 @@ public class InvoiceApi {
     @ApiOperation(value = "Create invoice for the contract", notes = "The endpoint creates an invoice for the given contract")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Invoice created"), @ApiResponse(code = 404, message = "Contract not found"), @ApiResponse(code = 400, message = "Bad request")})
     public ResponseEntity<InvoiceResponse> createInvoice(@Valid @RequestBody CreateInvoiceRequest request) {
-        Invoice invoice = invoiceService.createInvoice(request);
-
-        return ResponseEntity.ok(serviceConverter.convert(invoice, InvoiceResponse.class));
+//        Invoice invoice = invoiceService.createInvoice(request);
+//        return ResponseEntity.ok(serviceConverter.convert(invoice, InvoiceResponse.class));
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     @PutMapping("/{invoiceId}")
@@ -83,9 +84,10 @@ public class InvoiceApi {
     @ApiOperation(value = "Update an invoice", notes = "The endpoint updates the invoice by ID")
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Invoice created"), @ApiResponse(code = 400, message = "Bad request")})
     public ResponseEntity<InvoiceResponse> updateInvoice(@PathVariable UUID invoiceId, @Valid @RequestBody UpdateInvoiceRequest request) {
-        Invoice invoice = invoiceService.updateInvoice(invoiceId, request);
+        // Invoice invoice = invoiceService.updateInvoice(invoiceId, request);
+        // return ResponseEntity.ok(serviceConverter.convert(invoice, InvoiceResponse.class));
 
-        return ResponseEntity.ok(serviceConverter.convert(invoice, InvoiceResponse.class));
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
     @GetMapping("/{invoiceId}")
