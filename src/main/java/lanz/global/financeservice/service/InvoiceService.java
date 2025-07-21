@@ -22,6 +22,7 @@ import lanz.global.financeservice.repository.InvoiceRepository;
 import lanz.global.financeservice.repository.PaymentRepository;
 import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -47,6 +48,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class InvoiceService {
@@ -63,9 +65,11 @@ public class InvoiceService {
     private final S3Client s3Client;
 
     public void createInvoices(UUID contractId) {
+        log.error("INVOICE-GENERATION: Started invoice generation for contract {}", contractId);
         Optional<Contract> optionalContract = contractRepository.findById(contractId);
 
         if (optionalContract.isEmpty()) {
+            log.error("INVOICE-GENERATION: Failed, the contract with ID {} was not found", contractId);
             return;
         }
 
@@ -96,6 +100,7 @@ public class InvoiceService {
             contractRepository.save(contract);
         }
 
+        log.error("INVOICE-GENERATION: Ended invoice generation for contract {}", contractId);
     }
 
     private void updateContractTypeToEffective(Contract contract) {
@@ -112,10 +117,14 @@ public class InvoiceService {
     }
 
     private Integer extractInstallmentQuantity(Contract contract) {
-        LocalDate startDate = contract.getStart();
-        LocalDate endDate = contract.getEnd();
+        int quantity = switch (contract.getFrequency()) {
+            case ONLY_ONCE -> 1;
+            case WEEKLY -> Period.between(contract.getStart(), contract.getEnd()).getDays() / 7;
+            case MONTHLY -> Period.between(contract.getStart(), contract.getEnd()).getMonths();
+            case ANNUALLY -> Period.between(contract.getStart(), contract.getEnd()).getYears();
+        };
 
-        return Period.between(startDate, endDate).getMonths();
+        return Math.max(quantity, 1);
     }
 
     private BigDecimal getInstallmentAmount(Contract contract, int installmentQuantity) {
@@ -209,7 +218,7 @@ public class InvoiceService {
         invoice.setCompanyId(contract.getCompanyId());
         invoice.setInvoiceNumber(generateNextInvoiceNumber(contract));
 
-       return generateInvoicePdfAndSave(invoice);
+        return generateInvoicePdfAndSave(invoice);
     }
 
     public Invoice updateInvoice(UUID invoiceId, UpdateInvoiceRequest request) {

@@ -30,7 +30,7 @@ public class Contract {
     private BigDecimal totalAmount;
 
     @Column(name = "frequency")
-    private String frequency;
+    private FrequencyEnum frequency;
 
     @Column(name = "payment_day")
     private Integer paymentDay;

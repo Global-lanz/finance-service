@@ -5,6 +5,7 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
+import lanz.global.financeservice.model.FrequencyEnum;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -13,7 +14,7 @@ import java.util.UUID;
 
 public record ContractRequest(@Schema(description = "The ID of the customer") @NotNull UUID customerId,
                               @Schema(description = "The total amount of the contract", example = "299.90") @NotNull BigDecimal totalAmount,
-                              @Schema(description = "The frequency of the payment", example = "MONTHLY") String frequency,
+                              @Schema(description = "The frequency of the payment", example = "MONTHLY") FrequencyEnum frequency,
                               @Schema(description = "The day of the payment", example = "10") @DecimalMax(value = "31") @DecimalMin(value = "1") Integer paymentDay,
                               @Schema(description = "The start date of the contract", example = "2025-01-15") LocalDate start,
                               @Schema(description = "The end date of the contract", example = "2025-07-15") LocalDate end,
