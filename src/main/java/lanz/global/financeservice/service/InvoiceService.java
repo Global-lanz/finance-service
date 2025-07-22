@@ -15,6 +15,7 @@ import lanz.global.financeservice.model.Contract;
 import lanz.global.financeservice.model.ContractStatusEnum;
 import lanz.global.financeservice.model.ContractTypeEnum;
 import lanz.global.financeservice.model.Currency;
+import lanz.global.financeservice.model.FrequencyEnum;
 import lanz.global.financeservice.model.Invoice;
 import lanz.global.financeservice.model.Payment;
 import lanz.global.financeservice.repository.ContractRepository;
@@ -37,7 +38,6 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -88,7 +88,7 @@ public class InvoiceService {
 
             for (int i = 1; i <= installmentQuantity; i++) {
                 int invoiceNumber = currentInvoiceNumber + i;
-                Invoice invoice = createInvoice(companyId, installmentAmount, invoiceNumber, startDateReference);
+                Invoice invoice = createInvoice(companyId, installmentAmount, invoiceNumber, startDateReference, contract.getFrequency());
                 invoice.setContract(contract);
 
                 generateInvoicePdf(invoice);
@@ -117,14 +117,8 @@ public class InvoiceService {
     }
 
     private Integer extractInstallmentQuantity(Contract contract) {
-        int quantity = switch (contract.getFrequency()) {
-            case ONLY_ONCE -> 1;
-            case WEEKLY -> Period.between(contract.getStart(), contract.getEnd()).getDays() / 7;
-            case MONTHLY -> Period.between(contract.getStart(), contract.getEnd()).getMonths();
-            case ANNUALLY -> Period.between(contract.getStart(), contract.getEnd()).getYears();
-        };
-
-        return Math.max(quantity, 1);
+        return contract.getFrequency()
+                .calculateInstallmentQuantity(contract.getStart(), contract.getEnd());
     }
 
     private BigDecimal getInstallmentAmount(Contract contract, int installmentQuantity) {
@@ -132,16 +126,19 @@ public class InvoiceService {
     }
 
     private LocalDate getStartDateReference(Contract contract) {
-        LocalDate reference = contract.getStart().withDayOfMonth(contract.getPaymentDay());
-        return reference.isAfter(contract.getStart()) ? reference : reference.plusMonths(1);
+        return contract.getFrequency().calculateStartDateReference(
+                contract.getStart(),
+                contract.getPaymentDay(),
+                contract.getWeekPaymentDay()
+        );
     }
 
-    private Invoice createInvoice(UUID companyId, BigDecimal invoiceAmount, int invoiceNumber, LocalDate startDateReference) {
+    private Invoice createInvoice(UUID companyId, BigDecimal invoiceAmount, int invoiceNumber, LocalDate startDateReference, FrequencyEnum frequency) {
         Invoice invoice = new Invoice();
         invoice.setCompanyId(companyId);
         invoice.setInvoiceNumber(invoiceNumber);
         invoice.setAmount(invoiceAmount);
-        invoice.setDueDate(startDateReference.plusMonths(invoiceNumber));
+        invoice.setDueDate(frequency.calculateDueDate(startDateReference, invoiceNumber));
         return invoice;
     }
 

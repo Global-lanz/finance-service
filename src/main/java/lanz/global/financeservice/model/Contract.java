@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -34,6 +35,9 @@ public class Contract {
 
     @Column(name = "payment_day")
     private Integer paymentDay;
+
+    @Column(name = "week_payment_day")
+    private DayOfWeek weekPaymentDay;
 
     @Column(name = "start_date")
     private LocalDate start;

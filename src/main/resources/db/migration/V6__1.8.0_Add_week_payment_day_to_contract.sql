@@ -1,0 +1,2 @@
+ALTER TABLE IF EXISTS contract
+    ADD COLUMN week_payment_day CHARACTER VARYING;
