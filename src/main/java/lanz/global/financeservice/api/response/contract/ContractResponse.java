@@ -2,6 +2,7 @@ package lanz.global.financeservice.api.response.contract;
 
 import lanz.global.financeservice.model.ContractStatusEnum;
 import lanz.global.financeservice.model.ContractTypeEnum;
+import lanz.global.financeservice.model.FrequencyEnum;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,7 +22,7 @@ public class ContractResponse implements Serializable {
     private UUID contractId;
 
     private BigDecimal totalAmount;
-    private String frequency;
+    private FrequencyEnum frequency;
     private Integer paymentDay;
     private LocalDate start;
     private LocalDate end;
