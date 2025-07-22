@@ -9,6 +9,7 @@ import lanz.global.financeservice.model.FrequencyEnum;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -21,5 +22,6 @@ public record ContractRequest(@Schema(description = "The ID of the customer") @N
                               @Schema(description = "The termination clause of the contract in case of an early termination") String terminationClause,
                               @Schema(description = "The penalty fee of the contract in case of an early termination") @Digits(integer = 3, fraction = 2) BigDecimal penaltyFee,
                               @Schema(description = "The short description of the contract for identification") String description,
+                              @Schema(description = "The week payment day for weekly frequency", example = "MONDAY") DayOfWeek weekPaymentDay,
                               @Schema(description = "The ID of the currency") UUID currencyId) implements Serializable {
 }

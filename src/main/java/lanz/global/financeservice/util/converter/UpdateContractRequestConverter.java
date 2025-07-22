@@ -20,6 +20,7 @@ public class UpdateContractRequestConverter implements Converter<UpdateSourceTar
         target.setTerminationClause(source.terminationClause());
         target.setPenaltyFee(source.penaltyFee());
         target.setDescription(source.description());
+        target.setWeekPaymentDay(source.weekPaymentDay());
         target.setCustomerId(source.customerId());
         target.setCurrencyId(source.currencyId());
         return target;
