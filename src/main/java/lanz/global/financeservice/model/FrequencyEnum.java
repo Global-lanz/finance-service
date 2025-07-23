@@ -29,12 +29,16 @@ public enum FrequencyEnum {
     }, WEEKLY {
         @Override
         public int calculateInstallmentQuantity(LocalDate start, LocalDate end) {
-            return Math.max((int) ChronoUnit.DAYS.between(start, end) / 7, 1);
+            return Math.max((int) ChronoUnit.WEEKS.between(start, end), 1);
         }
 
         @Override
         public LocalDate calculateStartDateReference(LocalDate contractStart, Integer paymentDay, DayOfWeek weekPaymentDay) {
-            return contractStart.with(weekPaymentDay);
+            LocalDate startDateReference = contractStart.with(weekPaymentDay);
+            while (startDateReference.isBefore(contractStart)) {
+                startDateReference = startDateReference.plusWeeks(1);
+            }
+            return startDateReference;
         }
 
         @Override

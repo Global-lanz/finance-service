@@ -65,7 +65,7 @@ public class InvoiceService {
     private final S3Client s3Client;
 
     public void createInvoices(UUID contractId) {
-        log.error("INVOICE-GENERATION: Started invoice generation for contract {}", contractId);
+        log.info("INVOICE-GENERATION: Started invoice generation for contract {}", contractId);
         Optional<Contract> optionalContract = contractRepository.findById(contractId);
 
         if (optionalContract.isEmpty()) {
@@ -100,7 +100,7 @@ public class InvoiceService {
             contractRepository.save(contract);
         }
 
-        log.error("INVOICE-GENERATION: Ended invoice generation for contract {}", contractId);
+        log.info("INVOICE-GENERATION: Ended invoice generation for contract {}", contractId);
     }
 
     private void updateContractTypeToEffective(Contract contract) {
