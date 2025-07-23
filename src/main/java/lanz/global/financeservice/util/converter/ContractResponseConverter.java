@@ -27,6 +27,7 @@ public class ContractResponseConverter implements Converter<Contract, ContractRe
         response.setEnd(source.getEnd());
         response.setStatus(source.getStatus());
         response.setType(source.getType());
+        response.setWeekPaymentDay(source.getWeekPaymentDay());
         response.setTerminationClause(source.getTerminationClause());
         response.setPenaltyFee(source.getPenaltyFee());
         response.setDescription(source.getDescription());

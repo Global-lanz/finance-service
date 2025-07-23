@@ -31,12 +31,14 @@ public class Contract {
     private BigDecimal totalAmount;
 
     @Column(name = "frequency")
+    @Enumerated(EnumType.STRING)
     private FrequencyEnum frequency;
 
     @Column(name = "payment_day")
     private Integer paymentDay;
 
     @Column(name = "week_payment_day")
+    @Enumerated(EnumType.STRING)
     private DayOfWeek weekPaymentDay;
 
     @Column(name = "start_date")

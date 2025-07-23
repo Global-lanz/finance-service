@@ -9,6 +9,7 @@ import lombok.Setter;
 import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -28,6 +29,7 @@ public class ContractResponse implements Serializable {
     private LocalDate end;
     private ContractStatusEnum status;
     private ContractTypeEnum type;
+    private DayOfWeek weekPaymentDay;
     private String terminationClause;
     private BigDecimal penaltyFee;
     private String description;
