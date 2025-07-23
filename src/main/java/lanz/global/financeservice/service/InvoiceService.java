@@ -15,6 +15,7 @@ import lanz.global.financeservice.model.Contract;
 import lanz.global.financeservice.model.ContractStatusEnum;
 import lanz.global.financeservice.model.ContractTypeEnum;
 import lanz.global.financeservice.model.Currency;
+import lanz.global.financeservice.model.FrequencyEnum;
 import lanz.global.financeservice.model.Invoice;
 import lanz.global.financeservice.model.Payment;
 import lanz.global.financeservice.repository.ContractRepository;
@@ -22,6 +23,7 @@ import lanz.global.financeservice.repository.InvoiceRepository;
 import lanz.global.financeservice.repository.PaymentRepository;
 import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -36,7 +38,6 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,6 +48,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class InvoiceService {
@@ -63,9 +65,11 @@ public class InvoiceService {
     private final S3Client s3Client;
 
     public void createInvoices(UUID contractId) {
+        log.info("INVOICE-GENERATION: Started invoice generation for contract {}", contractId);
         Optional<Contract> optionalContract = contractRepository.findById(contractId);
 
         if (optionalContract.isEmpty()) {
+            log.error("INVOICE-GENERATION: Failed, the contract with ID {} was not found", contractId);
             return;
         }
 
@@ -84,7 +88,7 @@ public class InvoiceService {
 
             for (int i = 1; i <= installmentQuantity; i++) {
                 int invoiceNumber = currentInvoiceNumber + i;
-                Invoice invoice = createInvoice(companyId, installmentAmount, invoiceNumber, startDateReference);
+                Invoice invoice = createInvoice(companyId, installmentAmount, invoiceNumber, startDateReference, contract.getFrequency());
                 invoice.setContract(contract);
 
                 generateInvoicePdf(invoice);
@@ -96,6 +100,7 @@ public class InvoiceService {
             contractRepository.save(contract);
         }
 
+        log.info("INVOICE-GENERATION: Ended invoice generation for contract {}", contractId);
     }
 
     private void updateContractTypeToEffective(Contract contract) {
@@ -112,10 +117,8 @@ public class InvoiceService {
     }
 
     private Integer extractInstallmentQuantity(Contract contract) {
-        LocalDate startDate = contract.getStart();
-        LocalDate endDate = contract.getEnd();
-
-        return Period.between(startDate, endDate).getMonths();
+        return contract.getFrequency()
+                .calculateInstallmentQuantity(contract.getStart(), contract.getEnd());
     }
 
     private BigDecimal getInstallmentAmount(Contract contract, int installmentQuantity) {
@@ -123,16 +126,19 @@ public class InvoiceService {
     }
 
     private LocalDate getStartDateReference(Contract contract) {
-        LocalDate reference = contract.getStart().withDayOfMonth(contract.getPaymentDay());
-        return reference.isAfter(contract.getStart()) ? reference : reference.plusMonths(1);
+        return contract.getFrequency().calculateStartDateReference(
+                contract.getStart(),
+                contract.getPaymentDay(),
+                contract.getWeekPaymentDay()
+        );
     }
 
-    private Invoice createInvoice(UUID companyId, BigDecimal invoiceAmount, int invoiceNumber, LocalDate startDateReference) {
+    private Invoice createInvoice(UUID companyId, BigDecimal invoiceAmount, int invoiceNumber, LocalDate startDateReference, FrequencyEnum frequency) {
         Invoice invoice = new Invoice();
         invoice.setCompanyId(companyId);
         invoice.setInvoiceNumber(invoiceNumber);
         invoice.setAmount(invoiceAmount);
-        invoice.setDueDate(startDateReference.plusMonths(invoiceNumber));
+        invoice.setDueDate(frequency.calculateDueDate(startDateReference, invoiceNumber));
         return invoice;
     }
 
@@ -209,7 +215,7 @@ public class InvoiceService {
         invoice.setCompanyId(contract.getCompanyId());
         invoice.setInvoiceNumber(generateNextInvoiceNumber(contract));
 
-       return generateInvoicePdfAndSave(invoice);
+        return generateInvoicePdfAndSave(invoice);
     }
 
     public Invoice updateInvoice(UUID invoiceId, UpdateInvoiceRequest request) {
