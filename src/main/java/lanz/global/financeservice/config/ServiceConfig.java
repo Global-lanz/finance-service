@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Getter
+@Setter
 @ConfigurationProperties("gl.service.config")
 public class ServiceConfig {
 
