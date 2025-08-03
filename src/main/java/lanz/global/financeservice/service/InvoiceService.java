@@ -239,6 +239,7 @@ public class InvoiceService {
             String fileName = generatePdf(invoice);
             invoice.setFile(fileName);
         } catch (Exception e) {
+            log.error("Error generating PDF  {}", e.getMessage(), e);
             throw new RuntimeException(e);
         }
     }
