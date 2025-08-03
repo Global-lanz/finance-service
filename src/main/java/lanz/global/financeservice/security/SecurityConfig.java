@@ -1,6 +1,6 @@
 package lanz.global.financeservice.security;
 
-import lanz.global.financeservice.api.config.ServiceConfig;
+import lanz.global.financeservice.config.ServiceConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

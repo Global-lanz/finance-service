@@ -1,6 +1,6 @@
 package lanz.global.financeservice;
 
-import lanz.global.financeservice.api.config.ServiceConfig;
+import lanz.global.financeservice.config.ServiceConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
