@@ -20,7 +20,7 @@ import javax.crypto.spec.SecretKeySpec;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private static final String ROLE_SERVICE = "ROLE_SERVICE";
+    private static final String ROLE_SERVICE = "SERVICE";
     private final ServiceConfig config;
 
     @Bean
