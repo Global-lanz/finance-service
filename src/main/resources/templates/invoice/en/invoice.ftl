@@ -67,13 +67,14 @@
     <table>
         <thead>
         <tr>
-            <th>Description</th>
+
+            <#if description??><th>Description</th></#if>
             <th>Invoice value</th>
         </tr>
         </thead>
         <tbody>
             <tr>
-                <td>${description}</td>
+                <#if description??><td>${description}</td></#if>
                 <td>${currency} ${total}</td>
             </tr>
         </tbody>
