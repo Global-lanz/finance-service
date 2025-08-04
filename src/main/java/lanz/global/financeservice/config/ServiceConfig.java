@@ -15,7 +15,6 @@ public class ServiceConfig {
     @Getter
     @Setter
     public static class Security {
-        private String serviceSecret;
         private String apiSecret;
         private String originAllowed;
         private String basicUser;

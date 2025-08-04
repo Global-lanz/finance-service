@@ -36,7 +36,7 @@ public class AuthenticationService {
         try {
             ServiceAuthenticationRequest request = new ServiceAuthenticationRequest(
                     config.getServiceName(),
-                    config.getSecurity().getServiceSecret()
+                    config.getSecurity().getApiSecret()
             );
 
             return client.serviceAuthentication(request);
