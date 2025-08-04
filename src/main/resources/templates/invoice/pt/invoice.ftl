@@ -67,15 +67,15 @@
     <table>
         <thead>
         <tr>
-            <th>Descrição</th>
+            <#if description??><th>Descrição</th></#if>
             <th>Valor Unitário</th>
         </tr>
         </thead>
         <tbody>
-        <tr>
-            <td>${description}</td>
-            <td>${currency} ${total}</td>
-        </tr>
+            <tr>
+                <#if description??><td>${description}</td></#if>
+                <td>${currency} ${total}</td>
+            </tr>
         </tbody>
     </table>
 
