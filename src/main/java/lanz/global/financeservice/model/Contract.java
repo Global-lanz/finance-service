@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -30,10 +31,15 @@ public class Contract {
     private BigDecimal totalAmount;
 
     @Column(name = "frequency")
-    private String frequency;
+    @Enumerated(EnumType.STRING)
+    private FrequencyEnum frequency;
 
     @Column(name = "payment_day")
     private Integer paymentDay;
+
+    @Column(name = "week_payment_day")
+    @Enumerated(EnumType.STRING)
+    private DayOfWeek weekPaymentDay;
 
     @Column(name = "start_date")
     private LocalDate start;
