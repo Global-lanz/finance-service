@@ -11,6 +11,7 @@ import lanz.global.financeservice.model.Contract;
 import lanz.global.financeservice.model.ContractStatusEnum;
 import lanz.global.financeservice.model.ContractStatusTransition;
 import lanz.global.financeservice.model.ContractTypeEnum;
+import lanz.global.financeservice.model.FrequencyEnum;
 import lanz.global.financeservice.repository.ContractRepository;
 import lanz.global.financeservice.repository.ContractStatusTransitionRepository;
 import lanz.global.financeservice.repository.CurrencyRepository;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -72,7 +74,7 @@ public class ContractService {
     public Contract updateContractStatus(UUID contractId, ContractStatusUpdateRequest request) {
         Contract contract = findContractById(contractId);
 
-        validateUpdateContractStatus(contract.getStatus(), request.status());
+        validateUpdateContractStatus(contract, request);
 
         contract.setStatus(request.status());
         Contract saved = contractRepository.save(contract);
@@ -119,6 +121,7 @@ public class ContractService {
     }
 
     private void validateUpdateContract(Contract contract, ContractRequest request) {
+        validatePaymentDay(request);
         var permittedTypes = List.of(ContractTypeEnum.QUOTE, ContractTypeEnum.AMENDMENT_QUOTE, ContractTypeEnum.CANCELLATION_QUOTE);
         if (!permittedTypes.contains(contract.getType())) {
             throw new BadRequestException("exception.update-contract-type-not-allowed.title", "exception.update-contract-type-not-allowed.description", contract.getType().name());
@@ -132,11 +135,40 @@ public class ContractService {
         validateCurrencyExists(request.currencyId());
     }
 
+
+    private void validatePaymentDay(Contract contract) {
+        validatePaymentDay(contract.getFrequency(), contract.getPaymentDay(), contract.getWeekPaymentDay());
+    }
+
+    private void validatePaymentDay(ContractRequest request) {
+        validatePaymentDay(request.frequency(), request.paymentDay(), request.weekPaymentDay());
+    }
+
+    private void validatePaymentDay(FrequencyEnum frequency, Integer paymentDay, DayOfWeek weekPaymentDay) {
+        switch (frequency) {
+            case ONLY_ONCE, MONTHLY, ANNUALLY -> {
+                if (paymentDay == null) {
+                    throw new BadRequestException("exception.contract.payment-day-required.title", "exception.contract.payment-day-required.description");
+                }
+            }
+            case WEEKLY -> {
+                if (weekPaymentDay == null) {
+                    throw new BadRequestException("exception.contract.weekly-payment-day-required.title", "exception.contract.weekly-payment-day-required.description");
+                }
+            }
+        }
+    }
+
     private void validateCurrencyExists(UUID currencyId) {
         currencyRepository.findById(currencyId).orElseThrow(() -> new NotFoundException("Currency"));
     }
 
-    private void validateUpdateContractStatus(ContractStatusEnum fromStatus, ContractStatusEnum toStatus) {
+    private void validateUpdateContractStatus(Contract contract, ContractStatusUpdateRequest contractStatusUpdateRequest) {
+        validatePaymentDay(contract);
+
+        ContractStatusEnum fromStatus = contract.getStatus();
+        ContractStatusEnum toStatus = contractStatusUpdateRequest.status();
+
         Optional<ContractStatusTransition> contractStatusTransition = contractStatusTransitionRepository.findByFromStatusAndToStatus(fromStatus, toStatus);
 
         if (contractStatusTransition.isEmpty()) {
@@ -145,6 +177,7 @@ public class ContractService {
     }
 
     private void validateCreateContract(ContractRequest request) {
+        validatePaymentDay(request);
         validateCustomerExists(request.customerId());
         validateCurrencyExists(request.currencyId());
     }
