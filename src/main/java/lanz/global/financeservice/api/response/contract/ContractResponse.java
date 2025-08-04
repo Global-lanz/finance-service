@@ -2,12 +2,14 @@ package lanz.global.financeservice.api.response.contract;
 
 import lanz.global.financeservice.model.ContractStatusEnum;
 import lanz.global.financeservice.model.ContractTypeEnum;
+import lanz.global.financeservice.model.FrequencyEnum;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -21,12 +23,13 @@ public class ContractResponse implements Serializable {
     private UUID contractId;
 
     private BigDecimal totalAmount;
-    private String frequency;
+    private FrequencyEnum frequency;
     private Integer paymentDay;
     private LocalDate start;
     private LocalDate end;
     private ContractStatusEnum status;
     private ContractTypeEnum type;
+    private DayOfWeek weekPaymentDay;
     private String terminationClause;
     private BigDecimal penaltyFee;
     private String description;
