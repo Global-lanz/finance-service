@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>lanz.global</groupId>
 	<artifactId>finance-service</artifactId>
-	<version>1.8.1</version>
+	<version>1.8.2</version>
 	<name>finance-service</name>
 	<description>The finance service</description>
 	<url/>
@@ -98,6 +98,11 @@
 			<groupId>io.github.openfeign</groupId>
 			<artifactId>feign-micrometer</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>lanz.global</groupId>
+			<artifactId>library-service</artifactId>
+			<version>RC.20250908.001</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.postgresql</groupId>
@@ -175,5 +180,23 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<repositories>
+		<repository>
+			<id>central</id>
+			<url>https://repo1.maven.org/maven2</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+
+		<repository>
+			<id>github</id>
+			<url>https://maven.pkg.github.com/Global-lanz/library-service</url>
+		</repository>
+	</repositories>
 
 </project>
