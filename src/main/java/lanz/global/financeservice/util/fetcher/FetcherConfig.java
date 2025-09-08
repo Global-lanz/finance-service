@@ -9,7 +9,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 @Configuration
-public class CustomerFetcher {
+public class FetcherConfig {
 
     @Bean
     public Function<UUID, CustomerResponse> customerFetcher(CustomerService customerService) {
