@@ -3,6 +3,7 @@ package lanz.global.financeservice.util.converter;
 import lanz.global.financeservice.api.response.invoice.InvoiceResponse;
 import lanz.global.financeservice.api.response.invoice.PaymentResponse;
 import lanz.global.financeservice.model.Invoice;
+import lanz.global.libraryservice.converter.component.ServiceConverter;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
