@@ -4,16 +4,18 @@ import lanz.global.financeservice.api.response.contract.ContractCustomerResponse
 import lanz.global.financeservice.api.response.contract.ContractResponse;
 import lanz.global.financeservice.external.api.customer.response.CustomerResponse;
 import lanz.global.financeservice.model.Contract;
-import lanz.global.financeservice.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
+import java.util.function.Function;
 
 @Component
 @RequiredArgsConstructor
 public class ContractResponseConverter implements Converter<Contract, ContractResponse> {
 
-    private final CustomerService customerService;
+    private final Function<UUID, CustomerResponse> customerFetcher;
 
     @Override
     public ContractResponse convert(Contract source) {
@@ -33,7 +35,7 @@ public class ContractResponseConverter implements Converter<Contract, ContractRe
         response.setDescription(source.getDescription());
         response.setCurrencyId(source.getCurrencyId());
 
-        CustomerResponse customerResponse = customerService.findCustomerById(source.getCustomerId());
+        CustomerResponse customerResponse = customerFetcher.apply(source.getCustomerId());
 
         response.setCustomer(new ContractCustomerResponse(customerResponse.customerId(), customerResponse.name()));
 
