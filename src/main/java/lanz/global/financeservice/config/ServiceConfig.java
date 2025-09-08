@@ -10,7 +10,17 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class ServiceConfig {
 
     private final Security security = new Security();
+    private final S3 s3 = new S3();
+
     private String serviceName;
+
+    @Getter
+    @Setter
+    public static class S3 {
+        private String url;
+        private String key;
+        private String secret;
+    }
 
     @Getter
     @Setter

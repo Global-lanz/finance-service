@@ -2,6 +2,7 @@ package lanz.global.financeservice.util.converter;
 
 import lanz.global.financeservice.api.request.contract.ContractRequest;
 import lanz.global.financeservice.model.Contract;
+import lanz.global.libraryservice.converter.dto.UpdateSourceTarget;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
