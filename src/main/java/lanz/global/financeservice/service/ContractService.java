@@ -16,6 +16,7 @@ import lanz.global.financeservice.repository.ContractRepository;
 import lanz.global.financeservice.repository.ContractStatusTransitionRepository;
 import lanz.global.financeservice.repository.CurrencyRepository;
 import lanz.global.financeservice.repository.impl.ContractFilterRepository;
+import lanz.global.libraryservice.converter.component.ServiceConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
