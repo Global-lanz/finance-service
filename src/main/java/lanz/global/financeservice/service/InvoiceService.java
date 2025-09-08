@@ -21,7 +21,6 @@ import lanz.global.financeservice.model.Payment;
 import lanz.global.financeservice.repository.ContractRepository;
 import lanz.global.financeservice.repository.InvoiceRepository;
 import lanz.global.financeservice.repository.PaymentRepository;
-import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.i18n.LocaleContextHolder;

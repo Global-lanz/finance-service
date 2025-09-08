@@ -7,7 +7,6 @@ import jakarta.annotation.security.PermitAll;
 import lanz.global.financeservice.api.response.currency.CurrencyResponse;
 import lanz.global.financeservice.model.Currency;
 import lanz.global.financeservice.service.CurrencyService;
-import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

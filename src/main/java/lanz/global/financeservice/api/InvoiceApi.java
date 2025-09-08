@@ -15,7 +15,6 @@ import lanz.global.financeservice.api.response.invoice.UpdateInvoiceRequest;
 import lanz.global.financeservice.model.Invoice;
 import lanz.global.financeservice.model.Payment;
 import lanz.global.financeservice.service.InvoiceService;
-import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

@@ -15,8 +15,7 @@ import lanz.global.financeservice.model.FrequencyEnum;
 import lanz.global.financeservice.repository.ContractRepository;
 import lanz.global.financeservice.repository.ContractStatusTransitionRepository;
 import lanz.global.financeservice.repository.CurrencyRepository;
-import lanz.global.financeservice.repository.impl.ContractRepositoryFilter;
-import lanz.global.financeservice.util.converter.ServiceConverter;
+import lanz.global.financeservice.repository.impl.ContractFilterRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -32,7 +31,7 @@ public class ContractService {
 
     private final ServiceConverter serviceConverter;
     private final ContractRepository contractRepository;
-    private final ContractRepositoryFilter contractRepositoryFilter;
+    private final ContractFilterRepository contractFilterRepository;
     private final CustomerService customerService;
     private final AuthenticationFacade authenticationFacade;
     private final ContractStatusTransitionRepository contractStatusTransitionRepository;
@@ -62,7 +61,7 @@ public class ContractService {
 
     public Page<Contract> findAllContracts(GetContractParams params) {
         UUID companyId = authenticationFacade.getCompanyId();
-        return contractRepositoryFilter.findAllByFilter(companyId, params);
+        return contractFilterRepository.findAllByFilter(companyId, params);
     }
 
     public void deleteContractById(UUID contractId) {

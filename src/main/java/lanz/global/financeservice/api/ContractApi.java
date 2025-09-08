@@ -17,7 +17,6 @@ import lanz.global.financeservice.model.ContractStatusTransition;
 import lanz.global.financeservice.model.Invoice;
 import lanz.global.financeservice.service.ContractService;
 import lanz.global.financeservice.service.InvoiceService;
-import lanz.global.financeservice.util.converter.ServiceConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
