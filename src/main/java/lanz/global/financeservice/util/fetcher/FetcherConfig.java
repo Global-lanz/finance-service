@@ -4,6 +4,7 @@ import lanz.global.financeservice.external.api.customer.response.CustomerRespons
 import lanz.global.financeservice.service.CustomerService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.UUID;
 import java.util.function.Function;
@@ -12,7 +13,7 @@ import java.util.function.Function;
 public class FetcherConfig {
 
     @Bean
-    public Function<UUID, CustomerResponse> customerFetcher(CustomerService customerService) {
+    public Function<UUID, CustomerResponse> customerFetcher(@Lazy CustomerService customerService) {
         return customerService::findCustomerById;
     }
 }
