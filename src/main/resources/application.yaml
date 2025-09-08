@@ -51,3 +51,7 @@ gl:
     config:
       security:
         api-secret: abc123
+      s3:
+        url: http://minio:9000
+        key: minioadmin
+        secret: minioadmin

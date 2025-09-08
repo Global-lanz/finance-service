@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class ContractRepositoryFilter {
+public class ContractFilterRepository {
 
     private final ContractRepository contractRepository;
 
